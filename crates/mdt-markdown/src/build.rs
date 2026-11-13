@@ -93,9 +93,18 @@ impl InlineBuilder {
     /// Text whose source is exactly `text` somewhere inside `range` when possible.
     fn push_text(&mut self, text: &str, range: Range<usize>, src: &str) {
         let slice = &src[range.clone()];
-        let source = match slice.find(text) {
-            Some(off) if !text.is_empty() => range.start + off..range.start + off + text.len(),
-            _ => range,
+        // Usually the source starts with the text itself. Checking that first skips
+        // building a substring searcher, which was a third of the time to parse a document.
+        let off = if text.is_empty() {
+            None
+        } else if slice.starts_with(text) {
+            Some(0)
+        } else {
+            slice.find(text)
+        };
+        let source = match off {
+            Some(off) => range.start + off..range.start + off + text.len(),
+            None => range,
         };
         self.push_mapped(text, source);
     }
