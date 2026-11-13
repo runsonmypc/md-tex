@@ -1,0 +1,53 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+exclude = ["spikes", "vendor", "fuzz"]
+
+[workspace.package]
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.99"
+license = "GPL-3.0-only"
+publish = false
+
+[workspace.dependencies]
+mdt-doc = { path = "crates/mdt-doc" }
+mdt-markdown = { path = "crates/mdt-markdown" }
+mdt-text = { path = "crates/mdt-text" }
+mdt-math = { path = "crates/mdt-math", default-features = false }
+mdt-diagram = { path = "crates/mdt-diagram", default-features = false }
+mdt-image = { path = "crates/mdt-image", default-features = false }
+mdt-highlight = { path = "crates/mdt-highlight", default-features = false }
+
+# GPUI is pinned exactly. resvg and image must match the versions GPUI links, so
+# `cargo tree -d` shows no duplicates.
+gpui = { version = "=1.24.3", package = "gpui-unofficial" }
+gpui_platform = { version = "=1.24.3", package = "gpui-platform-gpui-unofficial", default-features = false, features = ["font-kit", "wayland", "x11"] }
+resvg = { version = "=0.46.0", default-features = false, features = ["text"] }
+image = { version = "=0.25.10", default-features = false, features = ["png", "jpeg", "gif", "webp"] }
+
+[profile.release]
+strip = true
+# Full LTO keeps the binary under the 50 MB budget (49.7 MB; thin LTO gave 54.2 MB).
+lto = "fat"
+codegen-units = 1
+
+[patch.crates-io]
+# mitex 0.2.4 with md-tex's fixes (listed at the top of vendor/mitex/src/converter.rs): it
+# formats with the caller's command spec, sets `cases` columns a \quad apart, never passes
+# raw source to Typst as code, and returns errors where it panicked.
+mitex = { path = "vendor/mitex" }
+# mitex-lexer 0.2.4 expanded `\newcommand` macros without bound, so a recursive one looped
+# forever; the vendored copy stops at a budget (vendor/mitex-lexer/src/macro_engine.rs).
+mitex-lexer = { path = "vendor/mitex-lexer" }
+# rowan 0.15.19 (mitex's syntax trees) rehashed each cached node's whole subtree when its
+# table grew, so building a deep tree took the square of its depth; the vendored copy keeps
+# each node's hash (vendor/rowan/src/green/node_cache.rs).
+rowan = { path = "vendor/rowan" }
+# mermaid-rs-renderer measures text with system fonts and caches font files under
+# ~/.cache/mmdr; the vendored copy adds `set_measure_font` to use a bundled font instead, and
+# a faster `segment_hits_node_shape_interior` (same output, a third of the routing time).
+mermaid-rs-renderer = { path = "vendor/mermaid-rs-renderer" }
+# GPUI's X11 input-method client panics when xim-ctext can't decode a string, and 0.3.0
+# decoded only UTF-8 and JIS: a dead key or simplified Chinese crashed the app under IBus.
+xim-ctext = { path = "vendor/xim-ctext" }

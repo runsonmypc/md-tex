@@ -1,0 +1,8 @@
+---
+source: crates/mdt-math/tests/math.rs
+expression: "typeset(r\"\\frac{a}{b}\", true).describe()"
+---
+size 7.29 x 18.16, baseline 11.19
+glyph 3550 font 0 size 10 at (1, 4.42)
+glyph 3551 font 0 size 10 at (1.43, 18.05)
+rule (1, 8.49) 5.29 x 0.4

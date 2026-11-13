@@ -1,0 +1,11 @@
+---
+source: crates/mdt-math/tests/math.rs
+expression: "typeset(r\"\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}\", true).describe()"
+---
+size 30.45 x 23.92, baseline 14.46
+glyph 6656 font 0 size 10 at (0, 14.46)
+glyph 3550 font 0 size 10 at (7.36, 8.48)
+glyph 3552 font 0 size 10 at (7.72, 20.44)
+glyph 3551 font 0 size 10 at (18.16, 8.48)
+glyph 3553 font 0 size 10 at (17.65, 20.44)
+glyph 6657 font 0 size 10 at (23.09, 14.46)

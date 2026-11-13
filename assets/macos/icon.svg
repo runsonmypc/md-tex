@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- md-tex: a sheet with a heading, a formula and the Markdown mark. Transparent background. -->
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ebe7dd"/>
+    </linearGradient>
+    <linearGradient id="fold" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#f4f1ea"/>
+      <stop offset="1" stop-color="#cfc9bb"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7b5cff"/>
+      <stop offset="1" stop-color="#22b8f0"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+    <filter id="badge-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#1b1460" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- The sheet, its top-right corner folded. -->
+  <path filter="url(#shadow)" fill="url(#paper)"
+        d="M250 112H652L822 282V864Q822 912 774 912H250Q202 912 202 864V160Q202 112 250 112Z"/>
+  <path fill="url(#fold)" d="M652 112V242Q652 282 692 282H822Z"/>
+
+  <!-- Heading: a hash and a dark bar. -->
+  <g fill="none" stroke="url(#accent)" stroke-width="16" stroke-linecap="round">
+    <path d="M291 186L279 262M325 186L313 262M268 210H340M264 238H336"/>
+  </g>
+  <rect x="368" y="205" width="236" height="38" rx="19" fill="#2b2f3a"/>
+
+  <!-- Body text. -->
+  <g fill="#cdc7ba">
+    <rect x="268" y="318" width="486" height="24" rx="12"/>
+    <rect x="268" y="366" width="420" height="24" rx="12"/>
+    <rect x="268" y="700" width="330" height="24" rx="12"/>
+    <rect x="268" y="748" width="250" height="24" rx="12"/>
+  </g>
+
+  <!-- A display formula: a sum and a fraction. -->
+  <path fill="none" stroke="url(#accent)" stroke-width="32" stroke-linejoin="miter" stroke-miterlimit="8"
+        d="M466 448H302L384 552L302 656H470"/>
+  <rect x="528" y="490" width="170" height="24" rx="12" fill="#2b2f3a"/>
+  <rect x="512" y="542" width="202" height="12" rx="6" fill="url(#accent)"/>
+  <rect x="548" y="582" width="130" height="24" rx="12" fill="#2b2f3a"/>
+
+  <!-- The Markdown mark on a round badge. -->
+  <g filter="url(#badge-shadow)">
+    <circle cx="792" cy="826" r="132" fill="#ffffff"/>
+    <circle cx="792" cy="826" r="116" fill="url(#accent)"/>
+  </g>
+  <path fill="#ffffff" transform="translate(792 826) scale(1.05) translate(-107.5 -64)"
+        d="M30 98V30h20l20 25 20-25h20v68H90V59L70 84 50 59v39zm125 0l-30-33h20V30h20v35h20z"/>
+</svg>

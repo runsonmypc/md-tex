@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=md-tex
+GenericName=Markdown Reader
+Comment=Read and edit Markdown with math and diagrams
+Exec=md-tex %F
+Icon=md-tex
+Terminal=false
+Categories=Office;TextEditor;Viewer;
+MimeType=text/markdown;text/x-markdown;
+StartupWMClass=md-tex

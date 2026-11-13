@@ -1,0 +1,196 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  # A dry run: builds and smoke-tests every release file from the chosen branch, and publishes nothing
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_ABOUT_VERSION: "0.9.3"
+
+jobs:
+  version:
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: A tag must name the version in Cargo.toml, and CHANGELOG.md must describe it
+        id: version
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -n 1)
+          # A dry run from a branch has no tag to check
+          if [ "$REF_TYPE" = tag ] && [ "$TAG" != "v$version" ]; then
+              echo "::error::tag $TAG does not match version $version in Cargo.toml"
+              exit 1
+          fi
+          tools/changelog-notes.sh "$version" >/dev/null
+          echo "version=$version" >>"$GITHUB_OUTPUT"
+
+  ci:
+    needs: version
+    uses: ./.github/workflows/ci.yml
+
+  licenses:
+    needs: version
+    timeout-minutes: 30
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: cargo install cargo-about --locked --features cli --version "$CARGO_ABOUT_VERSION"
+      - run: tools/third-party-licenses.sh
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: licenses
+          path: THIRD-PARTY-LICENSES.md
+          if-no-files-found: error
+
+  macos:
+    needs: [version, licenses]
+    timeout-minutes: 60
+    runs-on: macos-15 # arm64
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: licenses
+      - run: tools/bundle-macos.sh
+      - name: Smoke test
+        run: |
+          app=target/release/md-tex.app
+          "$app/Contents/MacOS/md-tex" --version | grep -qF "$VERSION"
+          test -s "$app/Contents/Resources/LICENSE"
+          test -s "$app/Contents/Resources/THIRD-PARTY-LICENSES.md"
+          codesign --verify --strict "$app"
+      - name: Zip
+        run: |
+          mkdir -p dist
+          ditto -c -k --keepParent target/release/md-tex.app "dist/md-tex-$VERSION-macos-arm64.zip"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: macos
+          path: dist/
+          if-no-files-found: error
+
+  linux:
+    needs: [version, licenses]
+    timeout-minutes: 60
+    # The oldest supported runner, so the binary also runs on systems with an older glibc
+    runs-on: ubuntu-22.04
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: licenses
+      - name: Build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang libfontconfig-dev libfreetype-dev libwayland-dev \
+            libx11-xcb-dev libxkbcommon-x11-dev libvulkan1
+      - run: tools/package-linux.sh
+      - name: Collect
+        run: |
+          mkdir -p dist
+          cp "target/linux/md-tex-$VERSION-x86_64.tar.gz" "target/linux/md-tex-$VERSION-x86_64.AppImage" dist/
+      # The binary must start on a system without any -dev package. A bare container has only
+      # the runtime libraries installed here.
+      - name: Install and run the tarball in clean Ubuntu 22.04 and 24.04
+        run: |
+          for image in ubuntu:22.04 ubuntu:24.04; do
+              docker run --rm -v "$PWD/dist:/dist:ro" -e VERSION "$image" sh -euc '
+                  apt-get update -qq
+                  apt-get install -y -qq libfontconfig1 libfreetype6 libxkbcommon-x11-0 \
+                      libx11-xcb1 libwayland-client0 libvulkan1 >/dev/null
+                  tar -xzf "/dist/md-tex-$VERSION-x86_64.tar.gz" -C /tmp
+                  cd "/tmp/md-tex-$VERSION-x86_64"
+                  ./bin/md-tex --version | grep -qF "$VERSION"
+                  HOME=/tmp/home ./install.sh
+                  /tmp/home/.local/bin/md-tex --version | grep -qF "$VERSION"
+                  test -s /tmp/home/.local/share/doc/md-tex/THIRD-PARTY-LICENSES.md
+                  test -s /tmp/home/.local/share/applications/md-tex.desktop
+              '
+          done
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: linux
+          path: dist/
+          if-no-files-found: error
+
+  assets:
+    needs: [version, ci, macos, linux]
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: release
+          pattern: "{macos,linux}"
+          merge-multiple: true
+      - name: Checksums and notes
+        run: |
+          (cd release && sha256sum -- * >SHA256SUMS && cat SHA256SUMS)
+          {
+              echo "## md-tex $VERSION"
+              tools/changelog-notes.sh "$VERSION"
+              echo
+              echo '```'
+              cat release/SHA256SUMS
+              echo '```'
+          } >>"$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release
+          path: release/
+          if-no-files-found: error
+
+  publish:
+    # Only a pushed tag publishes; a manual run is a dry run
+    if: github.event_name == 'push'
+    needs: [version, assets]
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # to create the release; no other job can write
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release
+          path: release
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          tools/changelog-notes.sh "$VERSION" >notes.md
+          gh release create "$TAG" --verify-tag --title "md-tex $VERSION" --notes-file notes.md release/*

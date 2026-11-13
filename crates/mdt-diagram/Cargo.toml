@@ -1,0 +1,21 @@
+[package]
+name = "mdt-diagram"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+pikchr = { version = "=0.1.4", optional = true }
+mermaid-rs-renderer = { version = "=0.3.1", default-features = false, optional = true }
+stacker = "0.1.25"
+
+[features]
+default = ["pikchr", "mermaid", "svg"]
+pikchr = ["dep:pikchr"]
+mermaid = ["dep:mermaid-rs-renderer"]
+svg = []
+
+[dev-dependencies]
+mdt-image = { path = "../mdt-image", default-features = false }

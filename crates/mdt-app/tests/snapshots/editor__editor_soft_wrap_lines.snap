@@ -1,0 +1,16 @@
+---
+source: crates/mdt-app/tests/editor.rs
+assertion_line: 414
+expression: "(wrapped, unwrapped)"
+---
+(
+    [
+        0..80,
+        80..160,
+        160..240,
+        240..300,
+    ],
+    [
+        0..300,
+    ],
+)

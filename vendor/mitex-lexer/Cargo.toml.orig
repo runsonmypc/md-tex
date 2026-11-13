@@ -1,0 +1,28 @@
+[package]
+name = "mitex-lexer"
+description = "Lexer for MiTeX"
+authors.workspace = true
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+
+[dependencies]
+
+mitex-spec.workspace = true
+
+logos.workspace = true
+ena.workspace = true
+ecow.workspace = true
+fxhash.workspace = true
+once_cell.workspace = true
+
+[dev-dependencies]
+mitex-spec-gen.workspace = true
+
+insta.workspace = true
+divan.workspace = true
+
+[lints]
+workspace = true

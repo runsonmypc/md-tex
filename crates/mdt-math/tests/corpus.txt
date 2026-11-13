@@ -1,0 +1,266 @@
+# Math corpus. One LaTeX expression per line; `#` starts a comment line.
+# Every expression must typeset in both inline and display mode.
+
+# Fractions
+\frac{a}{b}
+\frac{1}{2}
+\frac{x+1}{x-1}
+\frac{1}{1+\frac{1}{x}}
+\dfrac{a}{b}
+\tfrac{1}{3}
+\cfrac{1}{1+\cfrac{1}{2}}
+\frac{\partial f}{\partial x}
+\frac{d^2 y}{dx^2}
+\binom{n}{k}
+\binom{n}{k} = \frac{n!}{k!(n-k)!}
+a/b
+\frac{\sin x}{\cos x} = \tan x
+{a \over b}
+\frac{1}{\sqrt{2\pi\sigma^2}}
+
+# Roots
+\sqrt{x}
+\sqrt{x^2+y^2}
+\sqrt[3]{8}
+\sqrt[n]{a^n}
+\sqrt{1+\sqrt{1+\sqrt{x}}}
+\sqrt{\frac{a}{b}}
+x = \frac{-b \pm \sqrt{b^2-4ac}}{2a}
+
+# Sub- and superscripts
+x^2
+x_i
+x_i^2
+x^{2n}
+x_{i,j}
+e^{-x^2}
+a^{b^{c}}
+x_{n_k}
+{x^2}^3
+A^{\prime}
+f'(x)
+f''(x)
+x^\dagger
+\sum_i x_i^2
+T^{\mu\nu}_{\ \ \rho}
+{}^{14}_{6}\mathrm{C}
+
+# Greek letters
+\alpha \beta \gamma \delta
+\epsilon \varepsilon \zeta \eta
+\theta \vartheta \iota \kappa
+\lambda \mu \nu \xi
+\pi \varpi \rho \varrho
+\sigma \varsigma \tau \upsilon
+\phi \varphi \chi \psi \omega
+\Gamma \Delta \Theta \Lambda
+\Xi \Pi \Sigma \Upsilon
+\Phi \Psi \Omega
+\pi r^2
+E = mc^2
+\lambda = \frac{h}{p}
+
+# Big operators with limits
+\sum_{i=1}^{n} i
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+\prod_{k=1}^{n} k
+\int_0^1 x^2\,dx
+\int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}
+\int_{-\infty}^{\infty} f(x)\,dx
+\iint_D f\,dA
+\iiint_V \rho\,dV
+\oint_C \mathbf{F} \cdot d\mathbf{r}
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+\lim_{n \to \infty} \left(1+\frac{1}{n}\right)^n = e
+\limsup_{n\to\infty} a_n
+\liminf_{n\to\infty} a_n
+\max_{x \in S} f(x)
+\min_{i} x_i
+\sup_{x} |f(x)|
+\inf_{x > 0} g(x)
+\bigcup_{i=1}^{n} A_i
+\bigcap_{i \in I} B_i
+\bigoplus_{k} V_k
+\bigotimes_{j} W_j
+\coprod_{i} X_i
+\sum_{\substack{0 \le i \le m \\ 0 < j < n}} P(i,j)
+\sum\limits_{k=0}^{n} k
+\int\limits_a^b f
+\argmax_x f(x)
+\argmin_{\theta} L(\theta)
+\det(A)
+\gcd(a,b)
+\Pr(X = x)
+
+# Delimiters
+\left( \frac{a}{b} \right)
+\left[ x \right]
+\left\{ y \right\}
+\left| x \right|
+\left\| v \right\|
+\left\langle u, v \right\rangle
+\left\lfloor x \right\rfloor
+\left\lceil x \right\rceil
+\left. \frac{df}{dx} \right|_{x=0}
+\left( \frac{a}{b} \right)^2 \left[ x \right] \left\{ y \right\}
+\bigl( x \bigr)
+\Bigl[ y \Bigr]
+\biggl\{ z \biggr\}
+\Biggl( w \Biggr)
+\left( \sum_{i=1}^n x_i \right)^2
+|x| + \|y\|
+\langle \psi | \phi \rangle
+
+# Accents
+\hat{x}
+\bar{y}
+\vec{v}
+\tilde{n}
+\dot{a}
+\ddot{b}
+\acute{e}
+\grave{a}
+\breve{u}
+\check{c}
+\widehat{xyz}
+\widetilde{abc}
+\overline{AB}
+\underline{cd}
+\overbrace{1+2+3}^{6}
+\underbrace{x+y}_{z}
+\overrightarrow{AB}
+\overleftarrow{BA}
+\hat{\mathbf{n}}
+\dot{x} = -kx
+
+# Text
+\text{if } x > 0
+\text{if } x > 0 \text{ then } y
+x = 1 \quad \text{and} \quad y = 2
+\textbf{bold} + \textit{italic}
+\mathrm{d}x \text{ (differential)}
+f(x) = 0 \text{ for all } x \in \mathbb{R}
+
+# Font commands
+\mathbb{R}
+\mathbb{N} \subset \mathbb{Z} \subset \mathbb{Q} \subset \mathbb{R} \subset \mathbb{C}
+\mathcal{L}
+\mathcal{O}(n \log n)
+\mathrm{d}x
+\mathrm{Var}(X)
+\mathbf{v}
+\mathbf{A}\mathbf{x} = \mathbf{b}
+\boldsymbol{\alpha}
+\boldsymbol{\mu} + \boldsymbol{\Sigma}
+\mathfrak{g}
+\mathsf{T}
+\mathtt{code}
+\mathit{diff}
+\operatorname{rank}(A)
+\operatorname{tr}(M)
+
+# Environments
+\begin{matrix} a & b \\ c & d \end{matrix}
+\begin{pmatrix} a & b \\ c & d \end{pmatrix}
+\begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix}
+\begin{Bmatrix} x \\ y \end{Bmatrix}
+\begin{vmatrix} a & b \\ c & d \end{vmatrix} = ad - bc
+\begin{Vmatrix} A \end{Vmatrix}
+\begin{pmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{pmatrix}
+\begin{bmatrix} a_{11} & \cdots & a_{1n} \\ \vdots & \ddots & \vdots \\ a_{m1} & \cdots & a_{mn} \end{bmatrix}
+f(x) = \begin{cases} x & x \ge 0 \\ -x & x < 0 \end{cases}
+|x| = \begin{cases} x & \text{if } x \ge 0 \\ -x & \text{otherwise} \end{cases}
+\begin{cases} a = 1 \\ b = 2 \\ c = 3 \end{cases}
+\begin{aligned} a &= b + c \\ d &= e + f \end{aligned}
+\begin{aligned} (a+b)^2 &= a^2 + 2ab + b^2 \\ &= a^2 + b^2 + 2ab \end{aligned}
+\begin{align*} a &= b \\ c &= d \end{align*}
+\begin{align*} \nabla \cdot \mathbf{E} &= \frac{\rho}{\varepsilon_0} \\ \nabla \times \mathbf{B} &= \mu_0 \mathbf{J} \end{align*}
+\begin{array}{cc} 1 & 2 \\ 3 & 4 \end{array}
+\begin{smallmatrix} a & b \\ c & d \end{smallmatrix}
+
+# Same-block macros
+\newcommand{\R}{\mathbb{R}} x \in \R
+\newcommand{\norm}[1]{\left\| #1 \right\|} \norm{v}
+\newcommand{\abs}[1]{\left| #1 \right|} \abs{x} \le 1
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}} \pd{f}{x}
+
+# Relations and arrows
+a \le b \ne c \approx d \equiv e
+x \in A \subset B \subseteq C
+A \cup B \cap C \setminus D
+a \to b \Rightarrow c \Leftrightarrow d
+f: X \to Y
+x \mapsto x^2
+a \leftarrow b \longrightarrow c
+a \dashleftarrow b \dashrightarrow c
+p \implies q \iff r
+\forall x \, \exists y : x < y
+\neg (a \land b) \lor c
+a \perp b \parallel c
+x \sim y \simeq z \cong w
+a \propto b
+a \ll b \gg c
+A \vdash B \models C
+a \prec b \succ c
+\emptyset \varnothing
+x \notin A
+a \mid b
+a \nmid b
+\uparrow \downarrow \updownarrow
+
+# Operators and symbols
+a \times b \div c \pm d \mp e
+a \cdot b \circ c \ast d
+\nabla f
+\partial_t u = \Delta u
+\infty
+\hbar \omega
+\ell
+\aleph_0
+\Re z + \Im z
+\cdots \ldots \vdots \ddots
+\angle ABC
+\triangle ABC
+\sin x + \cos y + \tan z
+\log_2 n + \ln x + \exp(x)
+\arcsin x + \sinh y
+n!
+\star \dagger \ddagger
+\sharp \flat \natural
+\clubsuit \diamondsuit \heartsuit \spadesuit
+
+# Spacing
+a\,b\;c\:d\!e
+a \quad b \qquad c
+a \enspace b
+
+# Combined
+\nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0}, \quad \partial_t u = \Delta u
+\hat{H}\psi = E\psi
+i\hbar \frac{\partial}{\partial t}\Psi = \hat{H}\Psi
+\sum_{n=0}^{\infty} \frac{x^n}{n!} = e^x
+e^{i\pi} + 1 = 0
+\zeta(s) = \sum_{n=1}^\infty \frac{1}{n^s}
+\Gamma(z) = \int_0^\infty t^{z-1} e^{-t}\,dt
+P(A \mid B) = \frac{P(B \mid A)\,P(A)}{P(B)}
+\mathbb{E}[X] = \sum_x x\,p(x)
+\sigma = \sqrt{\frac{1}{N}\sum_{i=1}^{N}(x_i - \mu)^2}
+\det\begin{pmatrix} a & b \\ c & d \end{pmatrix} = ad - bc
+\| \mathbf{x} \|_2 = \sqrt{\sum_i x_i^2}
+f(x) = \sum_{k=0}^{\infty} \frac{f^{(k)}(a)}{k!}(x-a)^k
+\oint_{\partial \Sigma} \mathbf{B} \cdot d\boldsymbol{\ell} = \mu_0 I
+\frac{d}{dx}\left( \int_a^x f(t)\,dt \right) = f(x)
+\lim_{h \to 0} \frac{f(x+h) - f(x)}{h}
+\mathcal{F}\{f\}(\xi) = \int f(x) e^{-2\pi i x \xi}\,dx
+A = \begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix}
+\boxed{x = 1}
+\cancel{x}
+\stackrel{?}{=}
+\overset{\text{def}}{=}
+\underset{n}{\max}
+x \xrightarrow{f} y
+\phantom{x} y
+\color{red} x
+\textcolor{blue}{y} + z
+a \hspace{1em} b \hspace{-0.5mu} c \vspace{2pt} \raisebox{1pt}{x}
+a \hspace*{1em} b \vspace*{1EM plus 2pt} \hspace{1.em} c

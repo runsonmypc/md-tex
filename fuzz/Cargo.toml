@@ -1,0 +1,41 @@
+[package]
+name = "mdt-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+comemo = "=0.5.1"
+libfuzzer-sys = "0.4"
+mdt-diagram = { path = "../crates/mdt-diagram", default-features = false, features = ["pikchr", "mermaid"] }
+mdt-math = { path = "../crates/mdt-math" }
+
+[patch.crates-io]
+mitex = { path = "../vendor/mitex" }
+mitex-lexer = { path = "../vendor/mitex-lexer" }
+rowan = { path = "../vendor/rowan" }
+mermaid-rs-renderer = { path = "../vendor/mermaid-rs-renderer" }
+
+[[bin]]
+name = "pikchr"
+path = "fuzz_targets/pikchr.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "mitex"
+path = "fuzz_targets/mitex.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "mermaid"
+path = "fuzz_targets/mermaid.rs"
+test = false
+doc = false
+bench = false

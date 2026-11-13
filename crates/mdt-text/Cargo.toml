@@ -1,0 +1,25 @@
+[package]
+name = "mdt-text"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+anyhow = "1"
+gpui.workspace = true
+# Already linked through GPUI (url); used for emoji presentation.
+icu_properties = "2"
+parley = "=0.12.0"
+read-fonts = { version = "=0.41.0", default-features = false }
+
+[dev-dependencies]
+# Matches mdt-app's default, so tests build without full Xcode.
+gpui_platform = { workspace = true, features = ["runtime_shaders", "test-support"] }
+gpui = { workspace = true, features = ["test-support"] }
+insta = "1.49"
+
+[[test]]
+name = "gpui_fonts"
+harness = false

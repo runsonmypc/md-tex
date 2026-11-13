@@ -1,0 +1,20 @@
+[package]
+name = "mdt-doc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+memchr = "2"
+notify = "8.2"
+ropey = "=1.6.1"
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[dev-dependencies]
+proptest = "1"
+tempfile = "3"

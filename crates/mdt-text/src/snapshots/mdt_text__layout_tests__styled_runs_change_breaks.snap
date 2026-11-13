@@ -1,0 +1,8 @@
+---
+source: crates/mdt-text/src/layout_tests.rs
+expression: "describe(PARA, &runs, &[], 320.0)"
+---
+width 305.86 height 72.28
+line top 0.00 baseline 17.82 height 24.00 "Markdown paragraphs wrap at the "
+line top 24.00 baseline 41.82 height 24.00 "column width. Some words are bold, "
+line top 48.00 baseline 65.82 height 24.28 "some are code, and the last line is short."

@@ -1,0 +1,28 @@
+[package]
+name = "mdt-image"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+image.workspace = true
+fast_image_resize = "=6.1.0"
+resvg.workspace = true
+# The stylesheet parser usvg uses (the same version), to check SVG stylesheets as usvg reads them.
+simplecss = "=0.2.2"
+notify = "8.2"
+stacker = "0.1.25"
+ureq = { version = "=3.4.2", default-features = false, features = ["rustls"], optional = true }
+url = { version = "2.5", optional = true }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[dev-dependencies]
+tempfile = "3"
+
+[features]
+default = ["remote"]
+remote = ["dep:ureq", "dep:url"]

@@ -1,0 +1,8 @@
+---
+source: crates/mdt-math/tests/math.rs
+expression: "typeset(r\"\\pi r^2\", false).describe()"
+---
+size 15.13 x 8.39, baseline 8.28
+glyph 4225 font 0 size 10 at (0, 8.28)
+glyph 3566 font 0 size 10 at (5.95, 8.28)
+glyph 5533 font 0 size 7 at (10.59, 4.65)

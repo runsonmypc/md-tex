@@ -1,0 +1,8 @@
+---
+source: crates/mdt-text/src/layout_tests.rs
+expression: out
+---
+width 309.87 height 68.00
+line top 0.00 baseline 30.00 height 44.00 "Inline math [obj] sits on the baseline and "
+  box 7 at x 86.98 y 0.00
+line top 44.00 baseline 61.82 height 24.00 "makes this line taller than the next one."

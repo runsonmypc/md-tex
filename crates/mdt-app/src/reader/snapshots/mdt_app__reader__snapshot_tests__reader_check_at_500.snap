@@ -1,0 +1,173 @@
+---
+source: crates/mdt-app/src/reader/snapshot_tests.rs
+expression: snapshot(500.0)
+---
+window 500 column x 16.0 width 468.0
+unit FrontMatter height 82.0
+  fill (0.0,0.0) 468.0x66.0 brush 4
+  text (12.0,12.0) 219.1x42.0 scrolls [0..27, 27..48]
+  region items 1..2 444.0 wide, content 219.1
+unit Heading height 63.0
+  text (0.0,0.0) 197.0x40.0 [0..11]
+  fill (0.0,46.0) 468.0x1.0 brush 5
+unit Paragraph height 112.0
+  text (0.0,0.0) 463.9x96.0 [0..61, 61..118, 118..173, 173..181]
+  hover (13.5,24.0) https://example.com
+  hover (162.7,24.0) Go to the footnote
+unit Heading height 53.0
+  text (0.0,0.0) 147.9x30.0 [0..11]
+  fill (0.0,36.0) 468.0x1.0 brush 5
+unit Heading height 41.0
+  text (0.0,0.0) 137.8x25.0 [0..13]
+unit Heading height 36.0
+  text (0.0,0.0) 101.5x20.0 [0..12]
+unit Heading height 33.5
+  text (0.0,0.0) 86.5x17.5 [0..12]
+unit Heading height 33.0
+  text (0.0,0.0) 78.0x17.0 [0..11]
+unit List height 124.0
+  text (0.0,0.0) 9.0x24.0 [0..3]
+  text (26.0,0.0) 79.1x24.0 [0..12]
+  text (0.0,28.0) 9.0x24.0 [0..3]
+  text (26.0,28.0) 103.6x24.0 [0..13]
+  text (26.0,56.0) 9.0x24.0 [0..3]
+  text (52.0,56.0) 100.1x24.0 [0..13]
+  text (52.0,84.0) 9.0x24.0 [0..3]
+  text (78.0,84.0) 78.5x24.0 [0..11]
+unit List height 68.0
+  text (0.0,0.0) 11.1x24.0 [0..2]
+  text (26.0,0.0) 94.9x24.0 [0..11]
+  text (0.0,28.0) 14.4x24.0 [0..2]
+  text (26.0,28.0) 94.4x24.0 [0..11]
+unit List height 68.0
+  checkbox (4.0,5.5) 13.0 checked false
+  text (26.0,0.0) 76.8x24.0 [0..9]
+  checkbox (4.0,33.5) 13.0 checked true
+  text (26.0,28.0) 75.9x24.0 [0..9]
+unit BlockQuote height 64.0
+  text (18.0,0.0) 442.2x48.0 [0..56, 56..80]
+  fill (0.0,0.0) 4.0x48.0 brush 5
+unit BlockQuote height 68.0
+  text (18.0,0.0) 37.2x24.0 [0..4]
+  text (18.0,28.0) 143.9x24.0 [0..19]
+  fill (0.0,0.0) 4.0x52.0 brush 10
+unit BlockQuote height 68.0
+  text (18.0,0.0) 66.0x24.0 [0..7]
+  text (18.0,28.0) 119.4x24.0 [0..17]
+  fill (0.0,0.0) 4.0x52.0 brush 13
+unit Rule height 32.0
+  fill (0.0,7.0) 468.0x2.0 brush 5
+unit Table height 140.0
+  text (8.0,8.0) 30.2x24.0 [0..4]
+  text (102.8,8.0) 53.1x24.0 [0..6]
+  text (171.9,8.0) 40.8x24.0 [0..5]
+  fill (0.0,40.0) 220.7x2.0 brush 5
+  text (8.0,50.0) 9.0x24.0 [0..1]
+  text (124.4,50.0) 9.8x24.0 [0..1]
+  text (203.5,50.0) 9.1x24.0 [0..1]
+  fill (0.0,82.0) 220.7x1.0 brush 5
+  text (8.0,91.0) 78.8x24.0 [0..11]
+  text (115.5,91.0) 27.7x24.0 [0..3]
+  text (172.4,91.0) 40.2x24.0 [0..5]
+  fill (0.0,123.0) 220.7x1.0 brush 5
+  region items 0..12 468.0 wide, content 220.7
+unit Table height 404.0
+  text (8.0,8.0) 56.0x24.0 [0..7]
+  text (136.7,8.0) 56.8x24.0 [0..7]
+  text (209.5,8.0) 97.9x24.0 [0..12]
+  fill (0.0,40.0) 468.0x2.0 brush 5
+  text (8.0,50.0) 112.7x24.0 [0..13]
+  text (144.5,50.0) 41.2x24.0 [0..5]
+  text (209.5,50.0) 244.3x192.0 [0..19, 19..49, 49..83, 83..110, 110..139, 139..173, 173..198, 198..207]
+  fill (0.0,250.0) 468.0x1.0 brush 5
+  text (8.0,259.0) 95.4x24.0 [0..11]
+  text (154.7,259.0) 20.8x24.0 [0..3]
+  text (209.5,259.0) 247.4x120.0 [0..30, 30..61, 61..90, 90..121, 121..142]
+  fill (0.0,387.0) 468.0x1.0 brush 5
+  region items 0..12 468.0 wide, content 468.0
+unit Code height 103.0
+  fill (0.0,0.0) 468.0x87.0 brush 4
+  text (12.0,12.0) 893.4x63.0 scrolls [0..12, 12..119, 119..120]
+  region items 1..2 444.0 wide, content 893.4
+unit Heading height 53.0
+  text (0.0,0.0) 250.3x30.0 [0..19]
+  fill (0.0,36.0) 468.0x1.0 brush 5
+unit Paragraph height 178.2
+  image (0.0,0.0) 468.0x156.0
+  text (0.0,0.0) 468.0x162.2 [0..3]
+unit Paragraph height 46.2
+  image (105.9,0.0) 24.0x24.0
+  text (0.0,0.0) 317.5x30.2 [0..45]
+unit Paragraph height 62.2
+  image (0.0,0.0) 120.0x40.0
+  text (0.0,0.0) 120.0x46.2 [0..3]
+unit Paragraph height 99.4
+  placeholder (0.0,0.0) 155.0x77.2 "A missing picture\nimg/missing.png\nimage not found"
+  text (36.0,8.0) 111.0x61.2 [0..18, 18..34, 34..49]
+  text (0.0,0.0) 155.0x83.4 [0..3]
+unit Paragraph height 99.4
+  placeholder (0.0,0.0) 254.7x77.2 "A remote picture\nhttps://example.com/remote.png\nRemote image. Click to load."
+  text (36.0,8.0) 210.7x61.2 [0..17, 17..48, 48..76]
+  text (0.0,0.0) 254.7x83.4 [0..3]
+unit Code height 57.2
+  diagram (109.0,0.0) 250.0x35.0
+  text (0.0,0.0) 468.0x41.2 [0..3]
+unit Code height 144.2
+  diagram (18.5,0.0) 431.0x122.0
+  text (0.0,0.0) 468.0x128.2 [0..3]
+unit Code height 82.2
+  diagram (204.0,0.0) 60.0x60.0
+  text (0.0,0.0) 468.0x66.2 [0..3]
+unit Code height 92.2
+  fill (0.0,0.0) 468.0x45.0 brush 4
+  text (12.0,12.0) 160.1x21.0 [0..19]
+  text (0.0,49.0) 80.0x21.0 [0..12]
+  text (0.0,0.0) 468.0x76.2 [0..3]
+unit Heading height 53.0
+  math (65.8,3.9) 115.9x21.8
+  text (0.0,0.0) 181.7x30.0 [0..8]
+  fill (0.0,36.0) 468.0x1.0 brush 5
+unit Paragraph height 104.9
+  math (88.1,10.2) 24.2x13.4
+  math (297.2,0.0) 42.9x40.9
+  text (0.0,0.0) 443.9x88.9 [0..61, 61..121, 121..131]
+unit Paragraph height 74.4
+  math (187.1,8.0) 93.8x42.4
+  text (0.0,0.0) 468.0x58.4 [0..3]
+unit Paragraph height 112.5
+  math (188.2,32.0) 91.5x32.5
+  text (0.0,0.0) 468.0x96.5 [0..12, 12..16, 16..31]
+unit Math height 70.3
+  math (144.3,8.0) 179.3x38.3
+  text (0.0,0.0) 468.0x54.3 [0..3]
+unit Paragraph height 40.0
+  text (0.0,0.0) 314.9x24.0 [0..44]
+unit Paragraph height 91.6
+  math (97.4,8.0) 273.2x59.6
+  text (0.0,0.0) 468.0x75.6 [0..3]
+unit Paragraph height 103.8
+  math (0.0,8.0) 678.6x47.8
+  text (0.0,0.0) 678.6x87.8 [18446744073709551615..0, 0..3]
+  region items 0..2 468.0 wide, content 678.6
+unit Table height 140.0
+  text (8.0,8.0) 67.7x24.0 [0..8]
+  text (91.7,8.0) 63.6x24.0 [0..7]
+  fill (0.0,40.0) 163.2x2.0 brush 5
+  text (8.0,50.0) 53.0x24.0 [0..6]
+  math (91.7,54.6) 62.7x13.4
+  text (91.7,50.0) 62.7x24.0 [0..3]
+  fill (0.0,82.0) 163.2x1.0 brush 5
+  text (8.0,91.0) 37.9x24.0 [0..5]
+  math (91.7,97.6) 10.1x16.9
+  text (91.7,91.0) 10.1x24.0 [0..3]
+  fill (0.0,123.0) 163.2x1.0 brush 5
+  region items 0..11 468.0 wide, content 163.2
+unit Paragraph height 64.0
+  text (0.0,26.0) 78.0x21.6 [0..9]
+  text (0.0,0.0) 397.3x48.0 [0..51, 51..55]
+  hover (0.0,26.0) error: unknown command: \foo
+unit Footnotes height 64.0
+  fill (0.0,0.0) 156.0x1.0 brush 5
+  text (0.0,16.0) 9.7x21.0 [0..2]
+  text (26.0,16.0) 134.4x24.0 [0..18]
+  hover (0.0,16.0) Back to the reference
