@@ -1,6 +1,7 @@
 # md-tex
 
 A fast, native Markdown reader and editor for macOS and Linux, with LaTeX math, diagrams and tables. It draws everything itself on the GPU, with no browser engine.
+Example:
 
 ![md-tex in dark mode showing text, typeset equations, a flowchart, a table and highlighted code](docs/visual/showcase-dark.png)
 
