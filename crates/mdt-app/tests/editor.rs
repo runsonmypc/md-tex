@@ -711,6 +711,45 @@ fn large_document_keeps_one_parse_in_flight() {
     assert!(parses <= 2, "{parses} parses for 7 keystrokes");
 }
 
+fn large_document_edits_parse_only_the_blocks_around_them() {
+    let mut text = String::from("# Notes\n\n");
+    while text.len() < 200 * 1024 {
+        text.push_str("A paragraph of filler text.\n\n## Section\n\n- one\n- two\n\n");
+    }
+    let mut cx = cx();
+    let h = open(&mut cx, &text, 900.0);
+    set_mode(&mut cx, h, ViewMode::Source, 900.0);
+    let full_parse = |cx: &mut HeadlessAppContext| {
+        cx.update(|app| {
+            let v = h.read(app).unwrap();
+            let model = v.reader.borrow().model.clone();
+            (
+                v.parsed(),
+                model == mdt_markdown::parse(&v.doc.rope().to_string()),
+            )
+        })
+    };
+    let started = cx.update(|app| h.read(app).unwrap().background_parses());
+    h.update(&mut cx, |v, _, cx| {
+        v.editor.borrow_mut().selection = mdt_doc::Selection::cursor(100 * 1024);
+        v.cursor_moved(cx);
+    })
+    .unwrap();
+    // Each keystroke's model is ready at once, and the same as a full parse.
+    for s in ["Typed", "\n\n## Same\n\n", "- item\n"] {
+        typing(&mut cx, h, s);
+        assert_eq!(full_parse(&mut cx), (true, true), "after typing {s:?}");
+    }
+    let parses = cx.update(|app| h.read(app).unwrap().background_parses()) - started;
+    assert_eq!(parses, 0, "no background parse while typing");
+    // An opened fence would run on to the end of the document: that edit is parsed in the
+    // background.
+    typing(&mut cx, h, "\n\n```\n");
+    assert!(!full_parse(&mut cx).0, "a fence parses in the background");
+    draw(&mut cx, h);
+    assert_eq!(full_parse(&mut cx), (true, true));
+}
+
 /// Runs a task to completion on the app and returns its result.
 fn finish<T: 'static>(cx: &mut HeadlessAppContext, task: gpui::Task<T>) -> T {
     let out = std::rc::Rc::new(std::cell::RefCell::new(None));
@@ -906,7 +945,7 @@ fn line_layouts_follow_the_text() {
 fn main() {
     // `cargo test --test editor -- <part of a name>` runs only the matching tests.
     let filter = std::env::args().skip(1).find(|a| !a.starts_with('-'));
-    let tests: [(&str, fn()); 22] = [
+    let tests: [(&str, fn()); 23] = [
         (
             "end_on_a_line_broken_inside_a_word",
             end_on_a_line_broken_inside_a_word,
@@ -924,6 +963,10 @@ fn main() {
         (
             "large_document_keeps_one_parse_in_flight",
             large_document_keeps_one_parse_in_flight,
+        ),
+        (
+            "large_document_edits_parse_only_the_blocks_around_them",
+            large_document_edits_parse_only_the_blocks_around_them,
         ),
         (
             "close_and_quit_ask_about_unsaved_changes",

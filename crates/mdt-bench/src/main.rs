@@ -2,7 +2,8 @@
 //! `mdt-bench check <results.json>` compares measured values with the budgets and exits
 //! non-zero when any budget is exceeded.
 //! `mdt-bench budgets` prints the budget table.
-//! `mdt-bench parse` prints parse throughput for the 1 MB and 10 MB documents.
+//! `mdt-bench parse` prints parse throughput for the 1 MB and 10 MB documents, and the
+//! time to reparse each after a keystroke.
 
 use std::path::Path;
 use std::process::ExitCode;
@@ -37,13 +38,18 @@ fn main() -> ExitCode {
         }
         Some("parse") => {
             for r in mdt_bench::parse::run() {
+                // A reparse reads only the units around the edit, so no throughput.
+                let rate = if r.name.starts_with("reparse") {
+                    String::new()
+                } else {
+                    format!(" {:>8.1} MB/s", r.mb_per_s())
+                };
                 println!(
-                    "{:10} {:>10} bytes {:>7} units {:>9.2} ms {:>8.1} MB/s",
+                    "{:11} {:>10} bytes {:>7} units {:>9.2} ms{rate}",
                     r.name,
                     r.bytes,
                     r.units,
                     r.median.as_secs_f64() * 1e3,
-                    r.mb_per_s()
                 );
             }
             ExitCode::SUCCESS

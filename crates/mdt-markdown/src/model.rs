@@ -13,6 +13,9 @@ pub struct BlockModel {
     pub units: Vec<LayoutUnit>,
     /// Every heading in document order, for the palette and anchor links.
     pub headings: Vec<HeadingEntry>,
+    /// The text has link reference definitions, footnote definitions or footnote
+    /// references, so an edit in one block can change how others render.
+    pub cross_references: bool,
 }
 
 /// One top-level block, or one child of a top-level list or blockquote that was split

@@ -182,6 +182,18 @@ impl Reader {
         self.estimate_all();
     }
 
+    /// Applies an incremental reparse: like `set_model`, but only the patched units change.
+    pub fn apply_patch(&mut self, patch: mdt_markdown::incremental::Patch) {
+        let lineage = self.model.apply(patch);
+        let follow = |i| lineage.get(i);
+        self.math.follow_units(&follow);
+        self.diagrams.follow_units(&follow);
+        self.diagrams.retain_model(&self.model);
+        self.hscroll.clear();
+        self.selection = None;
+        self.estimate_all();
+    }
+
     /// All heights back to estimates for the current width and zoom, nothing measured;
     /// the anchor keeps the view in place.
     fn estimate_all(&mut self) {
