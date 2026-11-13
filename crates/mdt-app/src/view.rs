@@ -629,7 +629,7 @@ impl Render for DocumentView {
             if r.images.doc_dir != dir || r.images.remote_allowed != settings.remote_images {
                 r.images.doc_dir = dir;
                 r.images.remote_allowed = settings.remote_images;
-                r.content_landed();
+                r.content_changed();
             }
         }
         if settings.zoom != self.zoom {

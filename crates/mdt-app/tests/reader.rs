@@ -138,6 +138,39 @@ fn wide_table_scrolls_across_the_page() {
     );
 }
 
+/// A landed result lays out again only the units that were waiting for it.
+fn landed_highlighting_keeps_other_layouts() {
+    let ts = gpui_platform::current_platform(true).text_system();
+    let mut cx = HeadlessAppContext::with_platform(
+        ts,
+        Arc::new(()),
+        gpui_platform::current_headless_renderer,
+    );
+    let doc = "A paragraph.\n\n```rust\nfn main() {}\n```\n\nAnother paragraph.\n";
+    let mut reader = Reader::new(mdt_markdown::parse(doc), 1.0);
+    reader.resize(600.0, 800.0);
+    cx.update(|app| {
+        let fonts = fonts(app);
+        let mut fonts = fonts.borrow_mut();
+        let before = reader.prepare(&mut fonts, app);
+        for (info, code) in reader.take_pending_highlights() {
+            reader.highlights.compute(&info, &code);
+        }
+        reader.content_landed();
+        let after = reader.prepare(&mut fonts, app);
+        let same: Vec<bool> = before
+            .iter()
+            .zip(&after)
+            .map(|((_, a), (_, b))| std::rc::Rc::ptr_eq(a, b))
+            .collect();
+        assert_eq!(
+            same,
+            [true, false, true],
+            "only the code block is laid out again"
+        );
+    });
+}
+
 fn code_blocks_are_highlighted_after_background_work() {
     use mdt_app::reader::block::{Item, brush};
     use mdt_text::PaintOp;
@@ -736,9 +769,10 @@ fn undecodable_image_is_decoded_once() {
                 }
             }
             for work in reader.images.take_pending() {
-                decodes += usize::from(!work.changes_layout());
+                let probe = work.changes_layout();
+                decodes += usize::from(!probe);
                 if work.run() {
-                    reader.content_landed();
+                    reader.image_landed(probe);
                 }
             }
         }
@@ -766,7 +800,7 @@ fn layout_cache_stays_bounded() {
         let fonts = fonts(app);
         let mut fonts = fonts.borrow_mut();
         for i in 0..20 {
-            reader.content_landed();
+            reader.content_changed();
             reader.resize(600.0 + (i % 5) as f32 * 40.0, 4000.0);
             reader.set_zoom(if i % 2 == 0 { 1.0 } else { 1.1 });
             reader.prepare(&mut fonts, app);
@@ -887,7 +921,11 @@ fn remote_image_placeholder_moves_with_its_table() {
 fn main() {
     // `cargo test --test reader -- <part of a name>` runs only the matching tests.
     let filter = std::env::args().skip(1).find(|a| !a.starts_with('-'));
-    let tests: [(&str, fn()); 19] = [
+    let tests: [(&str, fn()); 20] = [
+        (
+            "landed_highlighting_keeps_other_layouts",
+            landed_highlighting_keeps_other_layouts,
+        ),
         (
             "pasted_diagram_does_not_show_its_neighbour",
             pasted_diagram_does_not_show_its_neighbour,

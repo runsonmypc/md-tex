@@ -74,6 +74,8 @@ pub struct Diagrams {
     inflight: Arc<Mutex<HashSet<Job>>>,
     /// The engine entry point; tests inject faulty ones.
     pub render: Render,
+    /// Counts diagrams shown before their rendering landed (see `MathView::unsettled`).
+    pub unsettled: u64,
 }
 
 impl Default for Diagrams {
@@ -87,6 +89,7 @@ impl Default for Diagrams {
             pending: Vec::new(),
             inflight: Default::default(),
             render: mdt_diagram::to_svg,
+            unsettled: 0,
         }
     }
 }
@@ -128,6 +131,7 @@ impl Diagrams {
                     self.requested.insert(slot, k);
                     self.queue(Job::Svg(k, false));
                 }
+                self.unsettled += 1;
                 // Keep the previous rendering while the edited source renders.
                 match self.slots.get(&slot) {
                     Some((_, prev @ Shown::Diagram { .. })) => prev.clone(),

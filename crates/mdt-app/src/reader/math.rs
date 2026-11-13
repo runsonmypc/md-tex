@@ -42,6 +42,10 @@ pub struct MathView {
     pub now: Instant,
     /// When the earliest held-back error is due; the owner lays out again then.
     pub due: Option<Instant>,
+    /// Counts equations shown before their final form (a placeholder, the last good scene
+    /// while the new one is typeset, or an error held back), so the owner knows which
+    /// layouts to make again when results land.
+    pub unsettled: u64,
 }
 
 impl Default for MathView {
@@ -53,6 +57,7 @@ impl Default for MathView {
             inflight: HashSet::new(),
             now: Instant::now(),
             due: None,
+            unsettled: 0,
         }
     }
 }
@@ -80,6 +85,7 @@ impl MathView {
                 let due = s.since + ERROR_DELAY;
                 if now < due {
                     self.due = Some(self.due.map_or(due, |d| d.min(due)));
+                    self.unsettled += 1;
                     held()
                 } else {
                     Shown::Error(e.message)
@@ -87,6 +93,7 @@ impl MathView {
             }
             None => {
                 let shown = held();
+                self.unsettled += 1;
                 if self.inflight.insert(key) {
                     self.pending.push((latex.to_owned(), display));
                 }

@@ -93,6 +93,10 @@ impl<T> LayoutCache<T> {
             .retain(|_, (unit, tick, _)| newest.get(unit) == Some(tick));
     }
 
+    pub fn remove(&mut self, key: &CacheKey) {
+        self.entries.remove(key);
+    }
+
     pub fn len(&self) -> usize {
         self.entries.len()
     }
