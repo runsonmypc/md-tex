@@ -18,7 +18,7 @@ A fast, native Markdown reader and editor for macOS and Linux, with LaTeX math, 
 
 md-tex opens straight to rendered text and stays responsive on large files. Equations, diagrams and images render in the background, so they don't hold up scrolling or typing.
 
-| Release build | macOS (Apple M4) | Linux (Ryzen 7 7800X3D) |
+| Measure | macOS (Apple M4) | Linux (Ryzen 7 7800X3D) |
 |---|---|---|
 | Launch to rendered text, 100 KB file | 173 ms | 280 ms |
 | Launch to rendered text, 10 MB file | 203 ms | 335 ms |
@@ -27,7 +27,7 @@ md-tex opens straight to rendered text and stays responsive on large files. Equa
 | Each equation after the first (median) | 0.3 ms | 0.3 ms |
 | Frames drawn while idle | 0 | 0 |
 
-All the measurements, and how to reproduce them, are in [docs/benchmarks.md](docs/performance.md).
+All the measurements, and how to reproduce them, are in [docs/benchmarks.md](docs/benchmarks.md).
 
 ## Install
 
