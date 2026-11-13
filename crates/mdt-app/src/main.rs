@@ -33,6 +33,8 @@ fn main() {
             None
         }
     };
+    // Parley reads the system's font list while the platform and the first window start.
+    mdt_app::reader::view::prepare_fonts();
     // Finder and `open` deliver files as open-URL events. Files opened at launch arrive
     // before `run` starts; later ones arrive while the app is running.
     let (tx, mut rx) = futures::channel::mpsc::unbounded::<Vec<PathBuf>>();
