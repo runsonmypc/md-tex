@@ -71,7 +71,9 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: licenses
-      - run: tools/bundle-macos.sh
+      # The runner has full Xcode, so the Metal shaders are compiled here rather than at each launch
+      - run: xcrun -f metal
+      - run: tools/bundle-macos.sh --precompiled-shaders
       - name: Smoke test
         run: |
           app=target/release/md-tex.app

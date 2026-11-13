@@ -38,7 +38,7 @@ CI (`.github/workflows/ci.yml`, macOS and Linux) runs the same checks with `--lo
 
 ## Features of `mdt-app`
 
-All on by default: `runtime-shaders` (macOS; compiles Metal shaders at launch so the Command Line Tools suffice) and `rendering`, which holds `math`, `pikchr`, `mermaid`, `svg`, `remote-images`, and `hl-<lang>` per grammar (`rust`, `python`, `javascript`, `typescript`, `json`, `bash`, `toml`, `yaml`, `c`, `go`). With full Xcode, `--no-default-features --features rendering` compiles the shaders at build time, which saves their compile at each launch; `tools/bundle-macos.sh --precompiled-shaders` builds the app that way. `bench` adds measurement hooks and is never on in release builds.
+All on by default: `runtime-shaders` (macOS; compiles Metal shaders at launch so the Command Line Tools suffice) and `rendering`, which holds `math`, `pikchr`, `mermaid`, `svg`, `remote-images`, and `hl-<lang>` per grammar (`rust`, `python`, `javascript`, `typescript`, `json`, `bash`, `toml`, `yaml`, `c`, `go`). With full Xcode, `--no-default-features --features rendering` compiles the shaders at build time, which saves their compile at each launch; `tools/bundle-macos.sh --precompiled-shaders` builds the app that way, and the release workflow uses it. `bench` adds measurement hooks and is never on in release builds.
 
 ## Generated files
 
