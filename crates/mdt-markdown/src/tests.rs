@@ -795,3 +795,9 @@ fn footnote_scenario() {
     };
     assert_eq!(content.text, "note");
 }
+
+#[test]
+fn a_definition_in_a_quoted_list_after_a_setext_heading_does_not_panic() {
+    // pulldown-cmark 0.13.4 panicked on this (an unwrap in `parse.rs`); 0.13.6 does not.
+    parse("`**`***\n[> <prev>\n1\n- e***\ntext\n=  \n\n==\n> - [r]: /u\n\t");
+}
