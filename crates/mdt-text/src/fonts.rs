@@ -274,7 +274,15 @@ pub struct FontRegistry {
 impl FontRegistry {
     /// Registers every bundled face with Parley and GPUI and maps each one.
     pub fn new(gpui: &(impl GpuiFonts + ?Sized)) -> anyhow::Result<Self> {
-        let mut fcx = FontContext::new();
+        Self::with_context(gpui, FontContext::new())
+    }
+
+    /// `new` with a font context made beforehand. Making one reads the system's font list
+    /// (about 20 ms on an M4), which can run on another thread while the window opens.
+    pub fn with_context(
+        gpui: &(impl GpuiFonts + ?Sized),
+        mut fcx: FontContext,
+    ) -> anyhow::Result<Self> {
         let mut map = HashMap::new();
         let mut math = None;
         gpui.add_fonts(BUNDLED.iter().map(|f| Cow::Borrowed(f.bytes)).collect())?;

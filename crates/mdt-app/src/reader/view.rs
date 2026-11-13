@@ -42,10 +42,24 @@ pub struct Fonts(pub Rc<RefCell<FontRegistry>>);
 
 impl gpui::Global for Fonts {}
 
+/// The Parley font context being made on another thread (`prepare_fonts`).
+static FONT_CONTEXT: std::sync::Mutex<Option<std::thread::JoinHandle<parley::FontContext>>> =
+    std::sync::Mutex::new(None);
+
+/// Starts making Parley's font context, which reads the system's font list, on another
+/// thread; the first window's `fonts` takes it. Call it early in `main`, so it runs while
+/// the platform and the window start.
+pub fn prepare_fonts() {
+    let handle = std::thread::spawn(parley::FontContext::new);
+    *FONT_CONTEXT.lock().unwrap() = Some(handle);
+}
+
 /// Shared fonts for all windows; registers the bundled fonts with GPUI once.
 pub fn fonts(cx: &mut App) -> Rc<RefCell<FontRegistry>> {
     if cx.try_global::<Fonts>().is_none() {
-        let reg = FontRegistry::new(cx.text_system()).expect("bundled fonts");
+        let prepared = FONT_CONTEXT.lock().unwrap().take();
+        let fcx = prepared.and_then(|h| h.join().ok()).unwrap_or_default();
+        let reg = FontRegistry::with_context(cx.text_system(), fcx).expect("bundled fonts");
         cx.set_global(Fonts(Rc::new(RefCell::new(reg))));
     }
     cx.global::<Fonts>().0.clone()
