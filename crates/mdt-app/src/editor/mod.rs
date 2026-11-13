@@ -166,6 +166,10 @@ impl Editor {
     }
 
     fn estimate(&self, rope: &Rope, i: usize) -> f32 {
+        self.estimate_line(rope.line(i))
+    }
+
+    fn estimate_line(&self, line: ropey::RopeSlice) -> f32 {
         let lh = self.line_h();
         if !self.soft_wrap {
             return lh;
@@ -173,14 +177,16 @@ impl Editor {
         let cols = self
             .char_w
             .map_or(80.0, |(_, w)| (self.width / w).floor().max(1.0));
-        let chars = rope.line(i).len_chars() as f32;
+        let chars = line.len_chars() as f32;
         (chars / cols).ceil().max(1.0) * lh
     }
 
     /// All line heights back to estimates (width, zoom or wrap change; undo).
     pub fn reset_lines(&mut self, rope: &Rope) {
         let n = rope.len_lines();
-        self.heights = Heights::new((0..n).map(|i| self.estimate(rope, i)).collect());
+        // In order through the rope: looking each line up by index took 25 ms for the
+        // 100,000 lines of a 10 MB document, before the first frame.
+        self.heights = Heights::new(rope.lines().map(|l| self.estimate_line(l)).collect());
         self.measured = vec![false; n];
         self.cache.clear();
         self.line_end = None;
