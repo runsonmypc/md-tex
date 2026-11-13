@@ -1,12 +1,24 @@
 #!/bin/sh
 # Builds target/release/md-tex.app. With --install, copies it to ~/Applications and puts
 # an `md-tex` launcher on PATH (~/.local/bin) that runs the bundled binary, so windows
-# opened from the terminal get the app icon and menu bar too.
+# opened from the terminal get the app icon and menu bar too. With --precompiled-shaders,
+# the Metal shaders are compiled at build time instead of at each launch; that needs full
+# Xcode (`xcrun metal`).
 # The license files go in Contents/Resources; THIRD-PARTY-LICENSES.md is included when
 # tools/third-party-licenses.sh has written it (release builds always do).
 set -eu
 cd "$(dirname "$0")/.."
-cargo build --release -p mdt-app --locked
+install=false
+features=""
+for arg in "$@"; do
+    case "$arg" in
+        --install) install=true ;;
+        --precompiled-shaders) features="--no-default-features --features rendering" ;;
+        *) echo "usage: $0 [--install] [--precompiled-shaders]" >&2; exit 2 ;;
+    esac
+done
+# shellcheck disable=SC2086 # $features is a list of arguments
+cargo build --release -p mdt-app --locked $features
 app=target/release/md-tex.app
 version=$(cargo pkgid -p mdt-app | sed 's/.*[#@]//')
 rm -rf "$app"
@@ -20,7 +32,7 @@ fi
 sed "s/@VERSION@/$version/g" assets/macos/Info.plist > "$app/Contents/Info.plist"
 codesign --force --sign - "$app"
 echo "built $app"
-if [ "${1:-}" = "--install" ]; then
+if [ "$install" = true ]; then
     dest="$HOME/Applications/md-tex.app"
     mkdir -p "$HOME/Applications" "$HOME/.local/bin"
     rm -rf "$dest"

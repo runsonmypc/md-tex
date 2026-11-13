@@ -37,7 +37,10 @@ objc = "0.2"
 [features]
 # Measurement hooks for the budget harness; never in release builds.
 bench = []
-default = ["runtime-shaders", "math", "pikchr", "mermaid", "svg", "remote-images", "hl-rust", "hl-python", "hl-javascript", "hl-typescript", "hl-json", "hl-bash", "hl-toml", "hl-yaml", "hl-c", "hl-go"]
+default = ["runtime-shaders", "rendering"]
+# Everything md-tex renders: `--no-default-features --features rendering` is the default
+# build with the Metal shaders compiled at build time.
+rendering = ["math", "pikchr", "mermaid", "svg", "remote-images", "hl-rust", "hl-python", "hl-javascript", "hl-typescript", "hl-json", "hl-bash", "hl-toml", "hl-yaml", "hl-c", "hl-go"]
 math = ["mdt-math/typeset"]
 pikchr = ["mdt-diagram/pikchr"]
 mermaid = ["mdt-diagram/mermaid"]
