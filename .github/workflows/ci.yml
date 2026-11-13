@@ -31,12 +31,14 @@ jobs:
       - name: Free disk space
         if: runner.os == 'Linux'
         run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+      # mesa-vulkan-drivers brings lavapipe, a software Vulkan driver: the runner has no GPU,
+      # and the window tests draw offscreen through Vulkan
       - name: Build dependencies
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y clang libfontconfig-dev libfreetype-dev libwayland-dev \
-            libx11-xcb-dev libxkbcommon-x11-dev libvulkan1 fonts-noto-cjk
+            libx11-xcb-dev libxkbcommon-x11-dev libvulkan1 mesa-vulkan-drivers fonts-noto-cjk
       # rust-toolchain.toml pins the version; rustup installs it on first use
       - run: rustup show active-toolchain
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3

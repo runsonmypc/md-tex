@@ -44,6 +44,7 @@ All on by default: `runtime-shaders` (macOS; compiles Metal shaders at launch so
 
 - `docs/shortcuts.md` comes from the keybinding registry: `cargo run -p mdt-app --bin gen-shortcuts`. A test fails if it is stale.
 - `docs/visual/reader-*.png`: `cargo run -p mdt-app --example reader_check` renders `docs/visual/reader-check.md` offscreen in light and dark at 1,400 and 500 px (and with the wide reader at 1,400 px, `reader-*-1400-wide.png`), plus its math section at 300% zoom (`math-*-300.png`) and its images-and-diagrams section (`media-*.png`; the sample images are in `docs/visual/img/`). `cargo run -p mdt-text --example visual_check` renders the text-layout check. `cargo run -p mdt-app --example editor_check` renders the same document in Source (wrap on and off) and Split modes to `docs/visual/editor-*.png`.
+- `docs/visual/showcase-dark.png`, the README's screenshot: `cargo run -p mdt-app --example showcase` renders `docs/visual/showcase.md` in the dark theme.
 
 ## macOS app bundle
 

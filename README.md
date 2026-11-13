@@ -1,97 +1,88 @@
 # md-tex
 
-A native, GPU-rendered Markdown reader and editor for macOS and Linux, with LaTeX math and diagrams. It draws everything itself, with no browser engine.
+A fast, native Markdown reader and editor for macOS and Linux, with LaTeX math, diagrams and tables. It draws everything itself on the GPU, with no browser engine.
 
-![md-tex showing a document with a table, code and math](docs/visual/reader-light-1400.png)
+![md-tex in dark mode showing text, typeset equations, a flowchart, a table and highlighted code](docs/visual/showcase-dark.png)
 
-md-tex opens Markdown files in a reading view. You can switch to a source editor or to a split view with both side by side. It renders:
+## Features
 
-- headings, lists, task lists (click a checkbox to toggle it), quotes, GitHub-style alerts, tables and footnotes
-- code blocks highlighted for Rust, Python, JavaScript, TypeScript, JSON, Bash, TOML, YAML, C and Go
-- LaTeX math, inline (`$...$`) and display (`$$...$$`)
-- Mermaid, Pikchr and SVG diagrams
-- local images, and remote images when you allow them (see [Privacy](#privacy))
+- A reading view, a source editor, and a split view with both side by side.
+- LaTeX math, inline (`$...$`) and display (`$$...$$`), typeset with Typst.
+- Mermaid, Pikchr and SVG diagrams.
+- Tables that wrap their cells, task lists you can tick, footnotes and GitHub-style alerts.
+- Code highlighting for Rust, Python, JavaScript, TypeScript, JSON, Bash, TOML, YAML, C and Go.
+- Local images, and remote images when you allow them.
+- Find and replace, a command palette, light and dark themes that follow the system, and zoom.
 
-Platforms: macOS 15 or later on Apple silicon, and Linux on x86_64 with X11. Wayland is not supported.
+## Speed
 
-## Download
+md-tex opens straight to rendered text and stays responsive on large files. Equations, diagrams and images render in the background, so they don't hold up scrolling or typing.
 
-Prebuilt builds are on the [Releases page](https://github.com/runsonmypc/md-tex/releases).
+| Release build | macOS (Apple M4) | Linux (Ryzen 7 7800X3D) |
+|---|---|---|
+| Launch to rendered text, 100 KB file | 173 ms | 280 ms |
+| Launch to rendered text, 10 MB file | 203 ms | 335 ms |
+| Keystroke handled and drawn, 1 MB file (median) | 1.3 ms | 0.3 ms |
+| CPU per frame while scrolling a 10 MB file (99th percentile) | 3.1 ms | 3.1 ms |
+| Each equation after the first (median) | 0.3 ms | 0.3 ms |
+| Frames drawn while idle | 0 | 0 |
 
-- **macOS:** `md-tex-<version>-macos-arm64.zip`. Unzip it and move `md-tex.app` to Applications. The app is not notarized by Apple, so macOS blocks the first launch. To allow it, try to open it once, then open System Settings > Privacy & Security and click **Open Anyway**. Or run `xattr -dr com.apple.quarantine /Applications/md-tex.app` in Terminal.
-- **Linux:** `md-tex-<version>-x86_64.tar.gz`. Extract it and run `./install.sh`, which installs md-tex into `~/.local` with a menu entry and icon (`PREFIX=/usr/local sudo ./install.sh` installs it system-wide). Or use `md-tex-<version>-x86_64.AppImage`: make it executable and run it. Both need a Vulkan driver, which desktop distributions include.
+All the measurements, and how to reproduce them, are in [docs/benchmarks.md](docs/performance.md).
 
-Each release lists SHA-256 checksums in `SHA256SUMS`.
+## Install
 
-## Build from source
+Download the latest build from the [Releases page](https://github.com/runsonmypc/md-tex/releases). Checksums are in `SHA256SUMS`.
 
-Install Rust with [rustup](https://rustup.rs). The repository's `rust-toolchain.toml` selects the Rust version, and rustup installs it on first use.
+- **macOS 15 or later, Apple silicon:** unzip `md-tex-<version>-macos-arm64.zip` and move `md-tex.app` to Applications. The app is not notarized, so macOS blocks the first launch: try to open it once, then click **Open Anyway** in System Settings > Privacy & Security. Or run `xattr -dr com.apple.quarantine /Applications/md-tex.app`.
+- **Linux, x86_64, X11:** extract `md-tex-<version>-x86_64.tar.gz` and run `./install.sh`, which installs into `~/.local` with a menu entry (`PREFIX=/usr/local sudo ./install.sh` installs system-wide). Or make `md-tex-<version>-x86_64.AppImage` executable and run it. Both need a Vulkan driver, which desktop distributions include. Wayland is not supported.
 
-- **macOS:** the Xcode Command Line Tools (`xcode-select --install`). Full Xcode is not needed.
-- **Debian and Ubuntu:**
+### Build from source
 
-  ```sh
-  sudo apt-get install clang libfontconfig-dev libfreetype-dev libwayland-dev libx11-xcb-dev \
-    libxkbcommon-x11-dev libvulkan1
-  ```
-
-  Install `fonts-noto-cjk` as well to display Chinese, Japanese and Korean text.
-
-Then:
+Install Rust with [rustup](https://rustup.rs); `rust-toolchain.toml` picks the version. On macOS you need the Xcode Command Line Tools (`xcode-select --install`). On Debian and Ubuntu:
 
 ```sh
-git clone https://github.com/runsonmypc/md-tex.git
-cd md-tex
+sudo apt-get install clang libfontconfig-dev libfreetype-dev libwayland-dev libx11-xcb-dev \
+  libxkbcommon-x11-dev libvulkan1 fonts-noto-cjk
 ```
 
-macOS, as an app with its icon, menu bar and Finder "Open With":
+Then, in a clone of this repository:
 
 ```sh
+# macOS: installs ~/Applications/md-tex.app and an md-tex command in ~/.local/bin
 tools/bundle-macos.sh --install
-```
 
-This installs `~/Applications/md-tex.app` and an `md-tex` command in `~/.local/bin`. Add that directory to your `PATH` if it is not there already.
-
-Linux, with an application-menu entry and icon:
-
-```sh
+# Linux: installs into ~/.local with a menu entry
 cargo build --release -p mdt-app --locked
 assets/linux/install.sh target/release/md-tex
-```
 
-This installs into `~/.local`; set `PREFIX=/usr/local` to install system-wide.
-
-Only the command, on either platform:
-
-```sh
+# Either: only the md-tex command
 cargo install --path crates/mdt-app --locked
 ```
-
-Release builds take several minutes. Run the same commands again to update.
 
 ## Use
 
 ```sh
-md-tex README.md     # one window per file; a file that is already open comes to the front
-md-tex               # an empty, untitled window
+md-tex notes.md    # one window per file; an open file comes to the front
+md-tex             # an empty window
 ```
 
-- Cmd+E (Ctrl+E on Linux) cycles between the reader, the source editor and the split view.
-- Cmd+P (Ctrl+P) opens the command palette, with every command, the document's headings and recent files.
-- Cmd+F (Ctrl+F) finds text, and Cmd+Alt+F (Ctrl+H) replaces it.
+| Shortcut (macOS / Linux) | Action |
+|---|---|
+| Cmd+E / Ctrl+E | Cycle between reader, source and split view |
+| Cmd+P / Ctrl+P | Command palette: every command, the document's headings and recent files |
+| Cmd+F / Ctrl+F | Find |
+| Cmd+Alt+F / Ctrl+H | Replace |
 
-All shortcuts are in [docs/shortcuts.md](docs/shortcuts.md). Settings (theme, zoom, wrapping, the wide reading column and more) are in [docs/settings.md](docs/settings.md).
+All shortcuts: [docs/shortcuts.md](docs/shortcuts.md). Settings (theme, zoom, wrapping, a wider reading column and more): [docs/settings.md](docs/settings.md).
 
 ## Privacy
 
-md-tex makes no network connections, except to fetch remote images in a document. By default it does not fetch them. It shows a placeholder instead, and clicking the placeholder loads that one image. Set `remote_images = "allow"` to load them all.
+md-tex makes no network connections except to fetch remote images, and by default it does not fetch them: it shows a placeholder, and clicking it loads that one image. Set `remote_images = "allow"` to load them all.
 
-## Reporting problems
+## Feedback
 
 Report bugs on the [issue tracker](https://github.com/runsonmypc/md-tex/issues). For security problems, see [SECURITY.md](SECURITY.md).
 
 ## License
 
-Copyright (C) 2026 Alex. md-tex is free software: you can redistribute it and change it under the terms of the [GNU General Public License, version 3](LICENSE). It comes with no warranty; see [LICENSE](LICENSE) for the full terms.
-
-md-tex includes fonts and code from other projects under their own licenses. Each release ships them in `THIRD-PARTY-LICENSES.md`.
+Copyright (C) 2026 Alex. md-tex is free software under the [GNU General Public License, version 3](LICENSE), with no warranty. It includes fonts and code from other projects under their own licenses, listed in `THIRD-PARTY-LICENSES.md` in each release.
