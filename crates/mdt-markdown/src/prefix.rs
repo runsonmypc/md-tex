@@ -43,6 +43,24 @@ pub fn safe_prefix_end(source: &str, min_bytes: usize) -> usize {
     source.len()
 }
 
+/// Whether a line of `source` could open or close front matter: `---`, `+++` or `...`,
+/// alone or after quote and list markers. pulldown-cmark reads front matter anywhere in a
+/// document, not only at its start, and looks for the closing line all the way to the end.
+pub(crate) fn has_metadata_delimiter(source: &str) -> bool {
+    // A lone `\r` ends a line too.
+    source.split(['\n', '\r']).any(|line| {
+        let line = line.trim_end();
+        ["---", "+++", "..."].iter().any(|d| {
+            line.strip_suffix(d).is_some_and(|before| {
+                before.chars().all(|c| {
+                    matches!(c, ' ' | '\t' | '>' | '-' | '*' | '+' | '.' | ')')
+                        || c.is_ascii_digit()
+                })
+            })
+        })
+    })
+}
+
 #[derive(Default)]
 struct State {
     /// Open fence: its character and length.
@@ -189,12 +207,14 @@ fn html_block_start(body: &str) -> Option<HtmlEnd> {
 }
 
 /// A line that, after a blank line, cannot continue a list, blockquote or indented code.
-fn starts_new_top_level_block(text: &str) -> bool {
+pub(crate) fn starts_new_top_level_block(text: &str) -> bool {
     if text.starts_with([' ', '\t', '>']) {
         return false;
     }
     let s = text;
-    if ["- ", "* ", "+ "].iter().any(|m| s.starts_with(m)) || matches!(s, "-" | "*" | "+") {
+    if s.strip_prefix(['-', '*', '+'])
+        .is_some_and(|rest| rest.is_empty() || rest.starts_with([' ', '\t']))
+    {
         return false;
     }
     let digits = s.bytes().take_while(u8::is_ascii_digit).count();

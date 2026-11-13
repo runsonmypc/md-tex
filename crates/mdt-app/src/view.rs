@@ -61,6 +61,9 @@ pub struct DocumentView {
     parsed_generation: u64,
     /// A background parse is running.
     parsing: bool,
+    /// The text the shown model is a full parse of (`None` while it is a parse of a
+    /// prefix), which an edit's reparse starts from.
+    parsed_text: Option<ropey::Rope>,
     /// Background parses started, for tests.
     background_parses: u64,
     mode: ViewMode,
@@ -129,6 +132,7 @@ impl DocumentView {
         let settings = crate::app_settings::current(cx);
         let zoom = settings.zoom as f32 / 100.0;
         let model = first_model(&doc);
+        let parsed_text = (doc.rope().len_bytes() <= PREFIX_BYTES).then(|| doc.rope().clone());
         let mut editor = Editor::new(doc.rope(), zoom, settings.soft_wrap);
         editor.set_model(&model);
         let mut reader = Reader::new(model, zoom);
@@ -145,6 +149,7 @@ impl DocumentView {
             parse_generation: 0,
             parsed_generation: 0,
             parsing: false,
+            parsed_text,
             background_parses: 0,
             mode: settings.initial_view_mode,
             split: 0.5,
@@ -191,13 +196,20 @@ impl DocumentView {
         this
     }
 
-    /// Parses the current text and swaps the model in: small documents at once, large
-    /// ones in the background. At most one background parse runs; edits made meanwhile
-    /// are parsed together once it finishes.
+    /// Parses the current text and swaps the model in. The blocks around an edit are
+    /// parsed again at once when that is enough; otherwise small documents are parsed at
+    /// once and large ones in the background. At most one background parse runs; edits
+    /// made meanwhile are parsed together once it finishes.
     pub fn reparse(&mut self, cx: &mut Context<Self>) {
         self.parse_generation += 1;
+        if self.patch_model() {
+            self.full_model_landed(cx);
+            cx.notify();
+            return;
+        }
         if self.doc.rope().len_bytes() <= PREFIX_BYTES {
             self.parsed_generation = self.parse_generation;
+            self.parsed_text = Some(self.doc.rope().clone());
             self.set_model(mdt_markdown::parse(&self.doc.rope().to_string()));
             self.full_model_landed(cx);
             cx.notify();
@@ -214,6 +226,7 @@ impl DocumentView {
         let generation = self.parse_generation;
         // Cloning the rope is cheap; the copy into one string happens off the UI thread.
         let rope = self.doc.rope().clone();
+        let text = rope.clone();
         let task = cx
             .background_executor()
             .spawn(async move { mdt_markdown::parse(&rope.to_string()) });
@@ -230,6 +243,7 @@ impl DocumentView {
                     return;
                 }
                 this.parsed_generation = generation;
+                this.parsed_text = Some(text);
                 this.set_model(model);
                 #[cfg(feature = "bench")]
                 crate::bench::full_model();
@@ -287,6 +301,42 @@ impl DocumentView {
         let at = crate::editor::text::line_range(&rope, line).start;
         self.editor.borrow_mut().selection = mdt_doc::Selection::cursor(at);
         self.cursor_moved(cx);
+    }
+
+    /// Parses again only the blocks the text changed in since the last full parse, when
+    /// they can be told apart from the rest; returns false when it could not.
+    fn patch_model(&mut self) -> bool {
+        let Some(old) = &self.parsed_text else {
+            return false;
+        };
+        let new = self.doc.rope().clone();
+        let patch = match crate::reparse::changed_range(old, &new) {
+            None => None,
+            Some(change) => {
+                let reader = self.reader.borrow();
+                let patch = mdt_markdown::incremental::reparse(
+                    &reader.model,
+                    &crate::reparse::RopeText(old),
+                    &crate::reparse::RopeText(&new),
+                    change,
+                    PREFIX_BYTES,
+                );
+                if patch.is_none() {
+                    return false;
+                }
+                patch
+            }
+        };
+        self.parsed_generation = self.parse_generation;
+        self.parsed_text = Some(new);
+        // An unchanged text (an edit undone before the parse) keeps its model.
+        if let Some(patch) = patch {
+            self.model_epoch += 1;
+            let mut reader = self.reader.borrow_mut();
+            reader.apply_patch(patch);
+            self.editor.borrow_mut().set_model(&reader.model);
+        }
+        true
     }
 
     fn set_model(&mut self, model: mdt_markdown::BlockModel) {

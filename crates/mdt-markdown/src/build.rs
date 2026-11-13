@@ -45,10 +45,12 @@ pub fn parse_with(source: &str, options: Options) -> BlockModel {
         source,
         ..Default::default()
     };
-    for (event, range) in Parser::new_ext(source, options).into_offset_iter() {
+    let mut events = Parser::new_ext(source, options).into_offset_iter();
+    for (event, range) in &mut events {
         b.event(event, range);
     }
-    b.finish()
+    let link_definitions = events.reference_definitions().iter().next().is_some();
+    b.finish(link_definitions)
 }
 
 /// Builds inline content: rendered text, spans, objects and the source map.
@@ -803,11 +805,13 @@ impl Builder<'_> {
         });
     }
 
-    fn finish(mut self) -> BlockModel {
+    fn finish(mut self, link_definitions: bool) -> BlockModel {
         while !self.stack.is_empty() {
             let len = self.source.len();
             self.end(TagEnd::Paragraph, len..len);
         }
+        let cross_references =
+            link_definitions || !self.footnote_defs.is_empty() || !self.footnote_numbers.is_empty();
         // A label defined twice keeps its first definition (GFM).
         let mut defined = HashSet::new();
         let mut notes: Vec<Footnote> = std::mem::take(&mut self.footnote_defs)
@@ -849,11 +853,12 @@ impl Builder<'_> {
         BlockModel {
             units: self.units,
             headings,
+            cross_references,
         }
     }
 }
 
-fn collect_headings(block: &Block, unit: usize, out: &mut Vec<HeadingEntry>) {
+pub(crate) fn collect_headings(block: &Block, unit: usize, out: &mut Vec<HeadingEntry>) {
     match &block.kind {
         BlockKind::Heading {
             level,

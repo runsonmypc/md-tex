@@ -205,9 +205,10 @@ fn replace_all_in_a_large_document_then_find() {
 }
 
 fn type_then_replace_in_a_large_document() {
-    // Over the synchronous parse limit: typing starts a background parse, and until it
-    // lands the matches' ranges point into the text before the typing.
-    let text = "colour é\n\n".repeat(200 * 1024 / 11);
+    // Over the synchronous parse limit, with a link definition so that the edit cannot be
+    // parsed on its own: typing starts a background parse, and until it lands the matches'
+    // ranges point into the text before the typing.
+    let text = format!("[r]: /u\n\n{}", "colour é\n\n".repeat(200 * 1024 / 11));
     let paragraphs = text.matches("colour").count();
     let mut cx = cx();
     let h = open(&mut cx, &text);
@@ -239,9 +240,9 @@ fn type_then_replace_in_a_large_document() {
     h.update(&mut cx, |v, _, cx| v.replace_one(cx)).unwrap();
     let after = cx.update(|app| h.read(app).unwrap().doc.rope().to_string());
     assert!(
-        after.starts_with("abccolor é\n\ncolour é"),
+        after.starts_with("abc[r]: /u\n\ncolor é\n\ncolour é"),
         "{:?}",
-        after.chars().take(24).collect::<String>()
+        after.chars().take(34).collect::<String>()
     );
     assert_eq!(after.matches("colour").count(), paragraphs - 1);
 }

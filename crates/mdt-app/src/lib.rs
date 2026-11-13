@@ -17,6 +17,7 @@ pub mod persist;
 pub mod prompt;
 pub mod reader;
 pub mod recent;
+mod reparse;
 pub mod settings;
 pub mod theme;
 pub mod view;

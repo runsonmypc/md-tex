@@ -2,6 +2,7 @@
 
 mod build;
 pub mod html;
+pub mod incremental;
 pub mod model;
 pub mod prefix;
 pub mod slug;

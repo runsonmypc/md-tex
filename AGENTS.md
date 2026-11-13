@@ -6,7 +6,7 @@ Notes for anyone (human or agent) working on this repository.
 
 - `crates/mdt-app`: the app (binary `md-tex`): windows, keymap, settings, reader view.
 - `crates/mdt-doc`: rope buffer, file I/O, undo history, source search.
-- `crates/mdt-markdown`: pulldown-cmark to the block model (layout units, source maps).
+- `crates/mdt-markdown`: pulldown-cmark to the block model (layout units, source maps). After an edit, `incremental.rs` parses only the units between the nearest safe cuts around it (the prefix rule in `prefix.rs`) and falls back to a full parse when link or footnote definitions, front matter delimiters or a block left open could reach past them. Its random-edit test compares every result with a full parse; `MDT_REPARSE_SEEDS=2000 cargo test --release -p mdt-markdown incremental` runs it longer.
 - `crates/mdt-text`: fonts, Parley paragraph layout, layout cache, GPUI glyph painting.
 - `crates/mdt-highlight`: tree-sitter highlighting, one feature per grammar.
 - `crates/mdt-math`: LaTeX through mitex and an in-memory Typst world to `MathScene`s, plus the scene cache. The Typst part is the `typeset` feature (the app's `math` feature).
@@ -65,7 +65,7 @@ cargo run --release -p mdt-bench -- generate bench-docs            # all documen
 cargo run --release -p mdt-bench -- generate bench-docs --no-photos
 cargo run -p mdt-bench -- budgets                                  # print the budget table
 cargo run -p mdt-bench -- check results.json                       # exits non-zero if any budget is exceeded
-cargo run --release -p mdt-bench -- parse                          # parse throughput on the 1 MB and 10 MB documents
+cargo run --release -p mdt-bench -- parse                          # full parse of the 1 MB and 10 MB documents, and a reparse after a keystroke
 ```
 
 `results.json` looks like `{"platform": "macos", "metrics": {"startup_first_text_frame_ms": 92.0}}`.
