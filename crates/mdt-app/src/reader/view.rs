@@ -3,7 +3,7 @@
 //! anchor so height changes above it never move the visible content.
 
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -79,8 +79,12 @@ pub struct Reader {
     last_version: Option<u64>,
     pub highlights: mdt_highlight::Cache,
     pending_highlights: Vec<(String, String)>,
-    highlights_inflight: std::collections::HashSet<mdt_highlight::CacheKey>,
-    highlight_epoch: u64,
+    highlights_inflight: HashSet<mdt_highlight::CacheKey>,
+    /// Bumped when something every layout may depend on changes (`content_changed`).
+    content_epoch: u64,
+    /// Cached layouts that show content still being computed, made again when results
+    /// land (`content_landed`).
+    incomplete: HashSet<CacheKey>,
     pub math: MathView,
     pub images: Images,
     pub diagrams: Diagrams,
@@ -159,7 +163,8 @@ impl Reader {
             highlights: mdt_highlight::Cache::default(),
             pending_highlights: Vec::new(),
             highlights_inflight: Default::default(),
-            highlight_epoch: 0,
+            content_epoch: 0,
+            incomplete: HashSet::new(),
             math: MathView::default(),
             images: Images::default(),
             diagrams: Diagrams::default(),
@@ -323,8 +328,16 @@ impl Reader {
         }
     }
 
-    fn layout_once(&mut self, i: usize, fonts: &mut FontRegistry, width: f32) -> UnitLayout {
+    /// Lays out unit `i`; the flag is true when the layout shows content that is still
+    /// being computed (highlighting, an equation, a diagram, an image's size).
+    fn layout_once(
+        &mut self,
+        i: usize,
+        fonts: &mut FontRegistry,
+        width: f32,
+    ) -> (UnitLayout, bool) {
         self.math.now = Instant::now();
+        let unsettled = self.unsettled();
         let mut ctx = Ctx::new(
             fonts,
             &mut self.lcx,
@@ -336,6 +349,7 @@ impl Reader {
         );
         ctx.page = self.page;
         let l = block::layout_unit(&mut ctx, i, &self.model.units[i], width);
+        let incomplete = !ctx.missing.is_empty();
         for m in ctx.missing {
             if self
                 .highlights_inflight
@@ -344,7 +358,11 @@ impl Reader {
                 self.pending_highlights.push(m);
             }
         }
-        l
+        (l, incomplete || self.unsettled() != unsettled)
+    }
+
+    fn unsettled(&self) -> u64 {
+        self.math.unsettled + self.diagrams.unsettled + self.images.unsettled
     }
 
     fn layout(&mut self, i: usize, fonts: &mut FontRegistry, cx: &App) -> Rc<UnitLayout> {
@@ -353,7 +371,7 @@ impl Reader {
             self.cache.touch(&key, i);
             return l;
         }
-        let mut l = self.layout_once(i, fonts, key.layout_width());
+        let (mut l, mut incomplete) = self.layout_once(i, fonts, key.layout_width());
         // Characters outside the bundled fonts pull in system fonts on first use.
         let before = fonts.version();
         for item in &l.items {
@@ -363,10 +381,14 @@ impl Reader {
         }
         if fonts.version() != before {
             // Paint ops were built before the fallback fonts had GPUI ids; build them again.
-            l = self.layout_once(i, fonts, key.layout_width());
+            (l, incomplete) = self.layout_once(i, fonts, key.layout_width());
         }
         let l = Rc::new(l);
-        self.cache.insert(self.key(i, fonts), i, l.clone());
+        let key = self.key(i, fonts);
+        if incomplete {
+            self.incomplete.insert(key);
+        }
+        self.cache.insert(key, i, l.clone());
         self.last_version = Some(self.version(fonts));
         l
     }
@@ -376,9 +398,9 @@ impl Reader {
         self.cache.len()
     }
 
-    /// Cache version: font set and highlight results that have landed since.
+    /// Cache version: font set and content changes since.
     fn version(&self, fonts: &FontRegistry) -> u64 {
-        fonts.version() | (self.highlight_epoch << 32)
+        fonts.version() | (self.content_epoch << 32)
     }
 
     /// Code blocks waiting for highlighting; the caller computes them in the background
@@ -394,17 +416,28 @@ impl Reader {
         self.content_landed();
     }
 
-    /// Background results (highlighting, math, diagrams, images) have landed: lay units
-    /// out again as they come into view. Heights that change above the anchor do not move
-    /// the visible content.
+    /// Background results (highlighting, math, diagrams, images) have landed: the layouts
+    /// that were waiting for some are made again as their units come into view. Heights
+    /// that change above the anchor do not move the visible content.
     pub fn content_landed(&mut self) {
-        self.highlight_epoch += 1;
+        for key in self.incomplete.drain() {
+            self.cache.remove(&key);
+        }
+        self.measured.iter_mut().for_each(|m| *m = false);
+    }
+
+    /// Something every layout may depend on changed (an image file, the remote image
+    /// setting, the document's folder): all units are laid out again.
+    pub fn content_changed(&mut self) {
+        self.content_epoch += 1;
+        self.incomplete.clear();
         self.measured.iter_mut().for_each(|m| *m = false);
     }
 
     /// Runs queued image and diagram work on this thread until none is left, then lays out
     /// again (tests and offscreen renders).
     pub fn run_images_blocking(&mut self) {
+        let mut failed_decode = false;
         loop {
             let work = self.images.take_pending();
             let diagrams = self.diagrams.take_pending();
@@ -412,14 +445,33 @@ impl Reader {
                 break;
             }
             for w in work {
-                w.run();
+                let probe = w.changes_layout();
+                if w.run() && !probe {
+                    failed_decode = true;
+                }
             }
             for w in diagrams {
                 w.run();
             }
         }
         self.images.watch_probed();
-        self.content_landed();
+        if failed_decode {
+            self.content_changed();
+        } else {
+            self.content_landed();
+        }
+    }
+
+    /// An image job that changed layout finished: a header read, which the waiting layouts
+    /// are made again for, or a failed decode, which turns the image's frames into
+    /// placeholders wherever it shows.
+    pub fn image_landed(&mut self, probe: bool) {
+        self.images.watch_probed();
+        if probe {
+            self.content_landed();
+        } else {
+            self.content_changed();
+        }
     }
 
     /// The remote-image URL whose placeholder is under window point `at`.
@@ -1261,13 +1313,13 @@ fn spawn_work(
             crate::bench::begin(work.bench_key()),
             !work.changes_layout(),
         );
+        let probe = work.changes_layout();
         let task = background.spawn(work.run_async());
         on_landed(reader, notify, window, cx, task, move |r, layout| {
             #[cfg(feature = "bench")]
             crate::bench::landed(crate::bench::Kind::Image, token, last);
             if layout {
-                r.images.watch_probed();
-                r.content_landed();
+                r.image_landed(probe);
             }
         });
     }
@@ -1281,7 +1333,7 @@ fn spawn_work(
                     {
                         let mut r = reader.borrow_mut();
                         r.images.invalidate(&path);
-                        r.content_landed();
+                        r.content_changed();
                     }
                     let _ = cx.update(|window, cx| notify(window, cx));
                 }
@@ -1461,7 +1513,7 @@ pub fn element(
             }
             if let Some(url) = r.load_at(e.position) {
                 r.images.allow(&url);
-                r.content_landed();
+                r.content_changed();
                 drop(r);
                 drop(fonts);
                 on_down_change(window, cx);

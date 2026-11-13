@@ -85,6 +85,8 @@ pub struct Images {
     /// Receives changed image paths from the watcher.
     changes: Option<futures::channel::mpsc::UnboundedReceiver<PathBuf>>,
     changes_tx: futures::channel::mpsc::UnboundedSender<PathBuf>,
+    /// Counts images shown before their size was known (see `MathView::unsettled`).
+    pub unsettled: u64,
 }
 
 impl Default for Images {
@@ -103,6 +105,7 @@ impl Default for Images {
             seen: HashSet::new(),
             changes: Some(changes),
             changes_tx,
+            unsettled: 0,
         }
     }
 }
@@ -154,6 +157,7 @@ impl Images {
             },
             None => {
                 self.queue(Job::Probe(source));
+                self.unsettled += 1;
                 Shown::Pending
             }
         }

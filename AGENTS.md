@@ -84,3 +84,5 @@ Single-stage timings: `cargo run --release -p mdt-image --example decode_timing 
 Offline test (Linux, X11, needs `strace` and `xdotool`): `python3 tools/offline_check.py target/release/md-tex bench-docs` opens, pages, edits and saves the media corpus with remote image references and fails on any internet socket.
 
 Find and palette timing on a document (the 10 MB one for the budgets): `cargo run --release -p mdt-app --example search_timing -- bench-docs/text-10m.md`.
+
+Reader layout time per frame while background results land (scrolling, with each frame's highlighting, math, diagrams and images finished before the next): `cargo run --release -p mdt-app --example landing_timing -- bench-docs/text-1m.md`.
