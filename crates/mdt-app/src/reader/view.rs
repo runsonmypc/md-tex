@@ -203,6 +203,7 @@ impl Reader {
 
     /// Applies an incremental reparse: like `set_model`, but only the patched units change.
     pub fn apply_patch(&mut self, patch: mdt_markdown::incremental::Patch) {
+        let old_units = self.model.units.len();
         let lineage = self.model.apply(patch);
         let follow = |i| lineage.get(i);
         self.math.follow_units(&follow);
@@ -210,7 +211,33 @@ impl Reader {
         self.diagrams.retain_model(&self.model);
         self.hscroll.clear();
         self.selection = None;
-        self.estimate_all();
+        if self.heights.len() != old_units || self.measured.len() != old_units {
+            self.estimate_all();
+            return;
+        }
+        // The other units' content did not change, so their heights (measured or not) stay.
+        let (old, new) = lineage.changed();
+        let est = self.model.units[new.clone()]
+            .iter()
+            .map(|u| block::estimate_height(u, self.width, self.zoom));
+        self.heights.splice(old.clone(), est);
+        self.measured
+            .splice(old.clone(), std::iter::repeat_n(false, new.len()));
+        if let Some(unit) = follow(self.anchor.unit) {
+            self.anchor.unit = unit;
+        } else {
+            self.anchor = Anchor {
+                unit: new.start,
+                offset: 0.0,
+            };
+        }
+        self.anchor.clamp(&self.heights);
+    }
+
+    /// Whether unit `i` holds a measured height.
+    #[doc(hidden)]
+    pub fn is_measured(&self, i: usize) -> bool {
+        self.measured.get(i).copied().unwrap_or(false)
     }
 
     /// All heights back to estimates for the current width and zoom, nothing measured;
