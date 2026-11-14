@@ -42,7 +42,11 @@ pub fn measure(name: &'static str, source: &str, runs: usize) -> ParseResult {
 pub fn measure_reparse(name: &'static str, source: &str, runs: usize) -> ParseResult {
     use mdt_markdown::incremental::{Change, reparse};
     let model = mdt_markdown::parse(source);
-    let at = source[..source.len() / 2].rfind('\n').map_or(0, |i| i + 1);
+    // On bytes: the middle may fall inside a character, and a newline never does.
+    let at = source.as_bytes()[..source.len() / 2]
+        .iter()
+        .rposition(|&b| b == b'\n')
+        .map_or(0, |i| i + 1);
     let mut edited = source.to_owned();
     edited.insert(at, 'x');
     let change = Change {
@@ -79,4 +83,14 @@ pub fn run() -> Vec<ParseResult> {
         measure_reparse("reparse_1m", &text_1m, 11),
         measure_reparse("reparse_10m", &text_10m, 5),
     ]
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn reparse_measures_text_whose_middle_falls_inside_a_character() {
+        // 11 bytes: the middle, byte 5, is inside the first `é`.
+        let r = super::measure_reparse("t", "a\n\nx\u{e9}\u{e9}\u{e9}\n", 1);
+        assert_eq!(r.bytes, 11);
+    }
 }
