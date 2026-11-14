@@ -3887,7 +3887,7 @@ dependencies = [
 
 [[package]]
 name = "mdt-app"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "futures",
@@ -3916,7 +3916,7 @@ dependencies = [
 
 [[package]]
 name = "mdt-bench"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "image",
  "mdt-markdown",
@@ -3926,7 +3926,7 @@ dependencies = [
 
 [[package]]
 name = "mdt-diagram"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "mdt-image",
  "mermaid-rs-renderer",
@@ -3936,7 +3936,7 @@ dependencies = [
 
 [[package]]
 name = "mdt-doc"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "libc",
  "memchr",
@@ -3949,7 +3949,7 @@ dependencies = [
 
 [[package]]
 name = "mdt-highlight"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "tree-sitter",
  "tree-sitter-bash",
@@ -3967,7 +3967,7 @@ dependencies = [
 
 [[package]]
 name = "mdt-image"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "fast_image_resize",
  "image",
@@ -3983,7 +3983,7 @@ dependencies = [
 
 [[package]]
 name = "mdt-markdown"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "pulldown-cmark",
  "pulldown-cmark-escape",
@@ -3994,7 +3994,7 @@ dependencies = [
 
 [[package]]
 name = "mdt-math"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "comemo",
  "insta",
@@ -4008,7 +4008,7 @@ dependencies = [
 
 [[package]]
 name = "mdt-text"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "gpui-platform-gpui-unofficial",
