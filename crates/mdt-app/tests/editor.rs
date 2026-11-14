@@ -750,6 +750,39 @@ fn large_document_edits_parse_only_the_blocks_around_them() {
     assert_eq!(full_parse(&mut cx), (true, true));
 }
 
+/// A keystroke's patch keeps the heights the reader measured for the units it did not
+/// change.
+fn an_edit_keeps_the_measured_heights_of_other_units() {
+    let mut text = String::from("# Notes\n\n");
+    while text.len() < 200 * 1024 {
+        text.push_str("A paragraph of filler text.\n\n## Section\n\n- one\n- two\n\n");
+    }
+    let mut cx = cx();
+    let h = open(&mut cx, &text, 1200.0);
+    set_mode(&mut cx, h, ViewMode::Split, 1200.0);
+    let state = |cx: &mut HeadlessAppContext| {
+        cx.update(|app| {
+            let v = h.read(app).unwrap();
+            let r = v.reader.borrow();
+            let first: Vec<(bool, f32)> = (0..10)
+                .map(|i| (r.is_measured(i), r.heights.get(i)))
+                .collect();
+            (first, r.heights.len() == r.model.units.len())
+        })
+    };
+    let (first, _) = state(&mut cx);
+    assert!(first.iter().all(|(m, _)| *m), "the first page is measured");
+    // Type far below the shown units, without drawing in between.
+    h.update(&mut cx, |v, _, cx| {
+        v.editor.borrow_mut().selection = mdt_doc::Selection::cursor(150 * 1024);
+        v.cursor_moved(cx);
+    })
+    .unwrap();
+    typing(&mut cx, h, "Typed");
+    assert!(cx.update(|app| h.read(app).unwrap().parsed()));
+    assert_eq!(state(&mut cx), (first, true));
+}
+
 /// Runs a task to completion on the app and returns its result.
 fn finish<T: 'static>(cx: &mut HeadlessAppContext, task: gpui::Task<T>) -> T {
     let out = std::rc::Rc::new(std::cell::RefCell::new(None));
@@ -945,7 +978,7 @@ fn line_layouts_follow_the_text() {
 fn main() {
     // `cargo test --test editor -- <part of a name>` runs only the matching tests.
     let filter = std::env::args().skip(1).find(|a| !a.starts_with('-'));
-    let tests: [(&str, fn()); 23] = [
+    let tests: [(&str, fn()); 24] = [
         (
             "end_on_a_line_broken_inside_a_word",
             end_on_a_line_broken_inside_a_word,
@@ -967,6 +1000,10 @@ fn main() {
         (
             "large_document_edits_parse_only_the_blocks_around_them",
             large_document_edits_parse_only_the_blocks_around_them,
+        ),
+        (
+            "an_edit_keeps_the_measured_heights_of_other_units",
+            an_edit_keeps_the_measured_heights_of_other_units,
         ),
         (
             "close_and_quit_ask_about_unsaved_changes",

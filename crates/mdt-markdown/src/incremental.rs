@@ -93,6 +93,15 @@ impl Lineage {
             None
         }
     }
+
+    /// The units the patch changed: their index range in the old model, then in the new
+    /// one. Every other unit has the same content as before, at the index `get` gives.
+    pub fn changed(&self) -> (Range<usize>, Range<usize>) {
+        (
+            self.kept_before..self.old_tail,
+            self.kept_before..self.new_tail,
+        )
+    }
 }
 
 /// Parses the part of `new` that `change` touched, or returns `None` when the whole text
