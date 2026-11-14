@@ -33,6 +33,7 @@ fn main() -> anyhow::Result<()> {
             times.push(t.elapsed());
             for (info, code) in reader.take_pending_highlights() {
                 reader.highlights.compute(&info, &code);
+                reader.highlight_landed(&mdt_highlight::Cache::key(&info, &code));
             }
             let batch = reader.math.take_pending();
             let keys: Vec<_> = batch.iter().map(|(l, d)| mdt_math::key(l, *d)).collect();
