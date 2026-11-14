@@ -15,7 +15,7 @@ use std::ops::Range;
 
 use crate::build::{collect_headings, parse};
 use crate::model::*;
-use crate::prefix::{has_metadata_delimiter, starts_new_top_level_block};
+use crate::prefix::{has_metadata_delimiter, is_blank, may_be_blank, starts_new_top_level_block};
 use crate::slug::Slugger;
 
 /// The document text before or after an edit.
@@ -226,10 +226,10 @@ fn is_cut<T: Text + ?Sized>(t: &T, at: usize) -> bool {
             .trim_end_matches('\r')
             .contains('\r')
     };
-    prev.trim().is_empty()
+    is_blank(prev.trim_end_matches(['\n', '\r']))
         && !lone_cr(&prev)
         && !lone_cr(&line)
-        && !text.trim().is_empty()
+        && !may_be_blank(text)
         && starts_new_top_level_block(text)
         && !matches!(text.trim_end(), "---" | "+++")
 }
@@ -437,6 +437,11 @@ mod tests {
         "_",
         "`",
         "  \n",
+        "\u{a0}",
+        "\u{a0}\n",
+        "\u{b}",
+        "\u{c}\n",
+        "\u{3000}\n",
         "\n\n    ",
         "<?",
         "?>",
@@ -538,6 +543,33 @@ mod tests {
             patched * 3 > edits,
             "only {patched} of {edits} edits patched"
         );
+    }
+
+    #[test]
+    fn a_line_of_unicode_space_is_not_blank() {
+        // A no-break space is text to Markdown: the heading marker's line continues the
+        // paragraph above once the marker is gone, so no cut may fall there.
+        for (text, new, change) in [
+            (
+                "para\n\u{a0}\n# h\n\nend\n",
+                "para\n\u{a0}\nx h\n\nend\n",
+                (8, 9, 9),
+            ),
+            ("a\n\u{a0}\n# b\n\nc\n", "a\n\u{a0}\nb\n\nc\n", (5, 7, 5)),
+        ] {
+            let mut model = parse(text);
+            let change = Change {
+                start: change.0,
+                old_end: change.1,
+                new_end: change.2,
+            };
+            if let Some(patch) = reparse(&model, text, new, change, 1024) {
+                model.apply(patch);
+            } else {
+                model = parse(new);
+            }
+            assert_eq!(model, parse(new), "{new:?}");
+        }
     }
 
     #[test]

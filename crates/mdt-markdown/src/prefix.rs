@@ -19,7 +19,7 @@ pub fn safe_prefix_end(source: &str, min_bytes: usize) -> usize {
         let start = pos;
         pos += line.len();
         let text = line.trim_end_matches(['\n', '\r']);
-        let blank = text.trim().is_empty();
+        let blank = is_blank(text);
         if first {
             first = false;
             if text == "---" || text == "+++" {
@@ -28,7 +28,7 @@ pub fn safe_prefix_end(source: &str, min_bytes: usize) -> usize {
             }
         }
         if let Some(blank_at) = prev_blank_at.take()
-            && !blank
+            && !may_be_blank(text)
             && state.is_outside()
             && blank_at >= min_bytes
             && starts_new_top_level_block(text)
@@ -95,7 +95,7 @@ impl State {
             if let Some((c, l)) = fence_marker(body)
                 && c == ch
                 && l >= len
-                && body.trim_start_matches(ch as char).trim().is_empty()
+                && is_blank(body.trim_start_matches(ch as char))
             {
                 self.fence = None;
             }
@@ -138,14 +138,34 @@ impl State {
     }
 }
 
+/// Whether a line (without its line ending) is blank. Markdown whitespace is ASCII:
+/// `str::trim` also strips Unicode spaces, so a line holding only a no-break space would
+/// pass for blank. Spaces and tabs only, which can miss a blank line pulldown-cmark sees
+/// (a vertical tab or form feed) but never takes text for one.
+pub(crate) fn is_blank(text: &str) -> bool {
+    text.bytes().all(|b| b == b' ' || b == b'\t')
+}
+
+/// Whether pulldown-cmark could read a line (without its line ending) as blank: it also
+/// counts vertical tabs and form feeds as blank. A cut must start on a line that is not.
+pub(crate) fn may_be_blank(text: &str) -> bool {
+    text.bytes()
+        .all(|b| matches!(b, b' ' | b'\t' | 0x0b | 0x0c))
+}
+
+/// Strips the spaces and tabs that indent a line, and no other whitespace.
+fn trim_indent(s: &str) -> &str {
+    s.trim_start_matches([' ', '\t'])
+}
+
 fn strip_containers(text: &str) -> &str {
-    let mut s = text.trim_start();
+    let mut s = trim_indent(text);
     while let Some(rest) = s.strip_prefix('>') {
-        s = rest.trim_start();
+        s = trim_indent(rest);
     }
     for marker in ["- ", "* ", "+ "] {
         if let Some(rest) = s.strip_prefix(marker) {
-            return rest.trim_start();
+            return trim_indent(rest);
         }
     }
     let digits = s.bytes().take_while(u8::is_ascii_digit).count();
@@ -154,7 +174,7 @@ fn strip_containers(text: &str) -> &str {
             .strip_prefix(". ")
             .or_else(|| s[digits..].strip_prefix(") "))
     {
-        return rest.trim_start();
+        return trim_indent(rest);
     }
     s
 }
